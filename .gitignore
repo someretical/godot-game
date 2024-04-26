@@ -1,6 +1,5 @@
 .godot/
 .venv/
-.vscode/
 
 *.obj
 *.exp
