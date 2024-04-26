@@ -1,3 +1,9 @@
 .godot/
 .venv/
 .vscode/
+
+*.obj
+*.exp
+*.dll
+*.lib
+*.sconsign*
