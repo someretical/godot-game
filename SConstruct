@@ -14,19 +14,29 @@ env = SConscript("godot-cpp/SConstruct")
 
 # tweak this if you want to use different folders, or more folders, to store your source code in.
 env.Append(CPPPATH=["src/extensions"])
-sources = Glob("src/extensions/*.cpp")
 
-if env["platform"] == "macos":
-    library = env.SharedLibrary(
-        "scenes/bin/libgdexample.{}.{}.framework/libgdexample.{}.{}".format(
-            env["platform"], env["target"], env["platform"], env["target"]
-        ),
-        source=sources,
-    )
-else:
-    library = env.SharedLibrary(
-        "scenes/bin/libgdexample{}{}".format(env["suffix"], env["SHLIBSUFFIX"]),
-        source=sources,
+# find all folders inside extensions
+extensions = [
+    d for d in os.listdir("src/extensions") if os.path.isdir("src/extensions/" + d)
+]
+
+library_sources = {}
+
+for extension in extensions:
+    library_sources[f"lib{extension}"] = Glob(f"src/extensions/{extension}/*.cpp")
+
+for libname, libsources in library_sources.items():
+    libpath = (
+        "src/scenes/bin/lib{}.{}.{}.framework/lib{}.{}.{}".format(
+            libname, env["platform"], env["target"], env["platform"], env["target"]
+        )
+        if env["platform"] == "macos"
+        else "src/scenes/bin/lib{}{}{}".format(
+            libname, env["suffix"], env["SHLIBSUFFIX"]
+        )
     )
 
-Default(library)
+    env.Library(
+        libpath,
+        source=libsources,
+    )

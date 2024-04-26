@@ -1,6 +1,7 @@
 #include "register_types.h"
 
-#include "gdexample.h"
+#include "tile/tile.h"
+#include "template/template.h"
 
 #include <gdextension_interface.h>
 #include <godot_cpp/core/defs.hpp>
@@ -13,7 +14,8 @@ void initialize_example_module(ModuleInitializationLevel p_level) {
 		return;
 	}
 
-	ClassDB::register_class<GDExample>();
+	ClassDB::register_class<Tile>();
+	ClassDB::register_class<Template>();
 }
 
 void uninitialize_example_module(ModuleInitializationLevel p_level) {
