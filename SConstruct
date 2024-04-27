@@ -133,4 +133,4 @@ android.release.arm64 = "res://src/scenes/bin/{libname}.android.template_release
         else "src/scenes/bin/{}{}{}".format(libname, env["suffix"], env["SHLIBSUFFIX"])
     )
 
-    Default(env.Library(target=libpath, source=Glob(f"src/extensions/{name}/*.cpp")))
+    Default(env.SharedLibrary(target=libpath, source=Glob(f"src/extensions/*/*.cpp")))

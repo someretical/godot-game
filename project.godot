@@ -19,6 +19,10 @@ config/icon="res://src/assets/icon.svg"
 [display]
 
 window/size/viewport_width=960
-window/size/viewport_height=720
+window/size/viewport_height=768
 window/size/resizable=false
 window/stretch/scale=2.0
+
+[rendering]
+
+textures/canvas_textures/default_texture_filter=0

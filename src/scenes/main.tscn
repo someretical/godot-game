@@ -1,6 +1,7 @@
-[gd_scene load_steps=12 format=3 uid="uid://tdklbvgvkt1r"]
+[gd_scene load_steps=13 format=3 uid="uid://tdklbvgvkt1r"]
 
 [ext_resource type="Texture2D" uid="uid://dqyy0763u0j7h" path="res://src/assets/tiles/beacon.png" id="1_ap810"]
+[ext_resource type="Texture2D" uid="uid://dfxflo4v4k7qu" path="res://src/assets/player/player_hitbox.png" id="1_auin4"]
 [ext_resource type="Texture2D" uid="uid://dq8g55lisqth1" path="res://src/assets/tiles/bedrock.png" id="2_qclo7"]
 [ext_resource type="Texture2D" uid="uid://86vxc514oepg" path="res://src/assets/tiles/bee_nest_front.png" id="3_nnyhu"]
 [ext_resource type="Texture2D" uid="uid://76md3dhln8gt" path="res://src/assets/tiles/blackstone.png" id="4_ua2hi"]
@@ -12,10 +13,17 @@
 [ext_resource type="Texture2D" uid="uid://dxiuwf8ere8f" path="res://src/assets/tiles/sand.png" id="10_7n3tj"]
 [ext_resource type="Texture2D" uid="uid://ddae8befs3saj" path="res://src/assets/tiles/smooth_stone.png" id="11_hi2kq"]
 
-[node name="Root" type="Node"]
+[node name="Root" type="Root"]
+
+[node name="PlayerPreloader" type="ResourcePreloader" parent="."]
+resources = [PackedStringArray("player_hitbox"), [ExtResource("1_auin4")]]
 
 [node name="TilePreloader" type="ResourcePreloader" parent="."]
 resources = [PackedStringArray("beacon", "bedrock", "bee_nest_front", "blackstone", "cobblestone", "cobweb", "dirt", "grass_block_side", "red_sand", "sand", "smooth_stone"), [ExtResource("1_ap810"), ExtResource("2_qclo7"), ExtResource("3_nnyhu"), ExtResource("4_ua2hi"), ExtResource("5_8hbo3"), ExtResource("6_a4gg4"), ExtResource("7_r7b0r"), ExtResource("8_alc0p"), ExtResource("9_fmwis"), ExtResource("10_7n3tj"), ExtResource("11_hi2kq")]]
+
+[node name="Camera" type="Camera2D" parent="."]
+anchor_mode = 0
+zoom = Vector2(2, 2)
 
 [node name="Map" type="Node" parent="."]
 
