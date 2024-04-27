@@ -28,17 +28,15 @@ for extension in extensions:
 for libname, libsources in library_sources.items():
     libpath = (
         "src/scenes/bin/{}.{}.{}.framework/{}.{}.{}".format(
-            libname, env["platform"], env["target"], libname, env["platform"], env["target"]
+            libname,
+            env["platform"],
+            env["target"],
+            libname,
+            env["platform"],
+            env["target"],
         )
         if env["platform"] == "macos"
-        else "src/scenes/bin/{}{}{}".format(
-            libname, env["suffix"], env["SHLIBSUFFIX"]
-        )
+        else "src/scenes/bin/{}{}{}".format(libname, env["suffix"], env["SHLIBSUFFIX"])
     )
 
-    Default(
-        env.Library(
-            target=libpath,
-            source=env.Object(source=libsources),
-        )
-    )
+    Default(env.Library(target=libpath, source=libsources))
