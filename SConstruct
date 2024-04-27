@@ -102,14 +102,23 @@ android.debug.arm64 = "res://src/scenes/bin/{libname}.android.template_debug.arm
 android.release.arm64 = "res://src/scenes/bin/{libname}.android.template_release.arm64.so"
     """.strip()
 
-    with open(f"src/extensions/{name}/register_types.cpp", "w") as f:
-        f.write(register_types_cpp)
+    try:
+        with open(f"src/extensions/{name}/register_types.cpp", "x") as f:
+            f.write(register_types_cpp)
+    except FileExistsError:
+        pass
 
-    with open(f"src/extensions/{name}/register_types.h", "w") as f:
-        f.write(register_types_h)
+    try:
+        with open(f"src/extensions/{name}/register_types.h", "x") as f:
+            f.write(register_types_h)
+    except FileExistsError:
+        pass
 
-    with open(f"src/scenes/bin/{name}.gdextension", "w") as f:
-        f.write(extensionfile)
+    try:
+        with open(f"src/scenes/bin/{name}.gdextension", "x") as f:
+            f.write(extensionfile)
+    except FileExistsError:
+        pass
 
     libpath = (
         "src/scenes/bin/{}.{}.{}.framework/{}.{}.{}".format(
