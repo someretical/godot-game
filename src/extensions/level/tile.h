@@ -1,11 +1,11 @@
 #ifndef TILE_H
 #define TILE_H
 
-#include "level.h"
-
 #include <godot_cpp/classes/sprite2d.hpp>
 
 namespace godot {
+
+class Level;
 
 class Tile : public Sprite2D {
 	GDCLASS(Tile, Sprite2D)
@@ -15,14 +15,15 @@ protected:
 
 public:
 	Tile();
-	Tile(Level *root, Vector2i tile_index);
+	Tile(Level *root, Vector2 pos, Vector2i tile_index);
 	~Tile();
 
 	void _process(double delta) override;
 	void _physics_process(double delta) override;
 
+	Vector2 m_pos;
 	Vector2i m_tile_index;
-	Level *m_root;
+	Level *m_level;
 };
 
 }

@@ -1,5 +1,5 @@
-#ifndef ROOT_H
-#define ROOT_H
+#ifndef LEVEL_H
+#define LEVEL_H
 
 #include <godot_cpp/classes/node2d.hpp>
 #include <godot_cpp/classes/resource_preloader.hpp>
@@ -9,12 +9,15 @@
 
 namespace godot {
 
+class Player;
+
 // In terms of tiles
-const int MAP_WIDTH = 15;
-const int MAP_HEIGHT = 12;
-const int TILE_COUNT_X = MAP_WIDTH + 1;
-const int TILE_COUNT_Y = MAP_HEIGHT + 1;
-const int TILE_SIZE = 16;
+constexpr int SCREEN_TILE_WIDTH = 15;
+constexpr int SCREEN_TILE_HEIGHT = 12;
+constexpr int TILE_COUNT_X = SCREEN_TILE_WIDTH + 1;
+constexpr int TILE_COUNT_Y = SCREEN_TILE_HEIGHT + 1;
+constexpr int TILE_SIZE = 16;
+constexpr int HALF_TILE = TILE_SIZE / 2;
 
 enum class PhysicsProcessingPriority {
 	Player = 10,
@@ -49,11 +52,15 @@ public:
 	void _ready() override;
 	void _physics_process(double delta) override;
 
+	void set_camera_pos(const Vector2 pos);
+	Vector2 get_camera_pos() const;
+
 	RandomNumberGenerator *m_rng;
 	ResourcePreloader *m_player_preloader;
 	ResourcePreloader *m_tile_preloader;
 	Vector2 m_camera_pos;
 	Vector2 m_camera_vel;
+	Player *m_player;
 	Camera2D *m_camera;
 	Rect2i m_camera_bounds;
 	Node *m_map_node;
