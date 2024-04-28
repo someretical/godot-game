@@ -10,7 +10,7 @@ void Tile::_bind_methods() {
 Tile::Tile() {
 }
 
-Tile::Tile(Root *root, Vector2i tile_index) : m_root(root), m_tile_index(tile_index) {
+Tile::Tile(Level *root, Vector2i tile_index) : m_root(root), m_tile_index(tile_index) {
 }
 
 Tile::~Tile() {

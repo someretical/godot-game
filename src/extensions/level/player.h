@@ -1,7 +1,7 @@
 #ifndef PLAYER_H
 #define PLAYER_H
 
-#include "../root/root.h"
+#include "level.h"
 
 #include <godot_cpp/classes/sprite2d.hpp>
 #include <godot_cpp/templates/vector.hpp>
@@ -16,13 +16,13 @@ protected:
 
 public:
 	Player();
-	Player(Root *root, Vector2 pos);
+	Player(Level *root, Vector2 pos);
 	~Player();
 
 	void _process(double delta) override;
 	void _physics_process(double delta) override;
 
-	Root *m_root;
+	Level *m_root;
 	Vector2 m_pos;
 };
 

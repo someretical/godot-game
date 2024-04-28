@@ -36,15 +36,15 @@ struct MapData {
 	int **tile_data;
 };
 
-class Root : public Node2D {
-	GDCLASS(Root, Node2D)
+class Level : public Node2D {
+	GDCLASS(Level, Node2D)
 
 protected:
 	static void _bind_methods();
 
 public:
-	Root();
-	~Root();
+	Level();
+	~Level();
 
 	void _ready() override;
 	void _physics_process(double delta) override;
