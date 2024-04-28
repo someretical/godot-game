@@ -16,3 +16,6 @@ Player::~Player() {
 
 void Player::_process(double delta) {
 }
+
+void Player::_physics_process(double delta) {
+}

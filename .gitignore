@@ -6,3 +6,4 @@
 *.dll
 *.lib
 *.sconsign*
+*.tmp

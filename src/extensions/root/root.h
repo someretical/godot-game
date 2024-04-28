@@ -1,11 +1,13 @@
 #ifndef ROOT_H
 #define ROOT_H
 
-#include <godot_cpp/classes/node.hpp>
+#include <godot_cpp/classes/node2d.hpp>
 #include <godot_cpp/classes/resource_preloader.hpp>
 #include <godot_cpp/classes/random_number_generator.hpp>
 #include <godot_cpp/classes/camera2d.hpp>
 #include <godot_cpp/templates/vector.hpp>
+
+namespace godot {
 
 // In terms of tiles
 const int MAP_WIDTH = 15;
@@ -14,25 +16,19 @@ const int TILE_COUNT_X = MAP_WIDTH + 1;
 const int TILE_COUNT_Y = MAP_HEIGHT + 1;
 const int TILE_SIZE = 16;
 
-namespace godot {
-
-namespace priorities {
-
-enum PhysicsProcessingPriority {
+enum class PhysicsProcessingPriority {
 	Player = 10,
 	Collectibles = 20,
 	Mobs = 30,
 	Tiles = 40
 };
 
-enum ProcessingPriority {
+enum class ProcessingPriority {
 	Player = 10,
 	Collectibles = 20,
 	Mobs = 30,
 	Tiles = 40
 };
-
-}
 
 struct MapData {
 	Vector2i dimensions;
@@ -40,8 +36,8 @@ struct MapData {
 	int **tile_data;
 };
 
-class Root : public Node {
-	GDCLASS(Root, Node)
+class Root : public Node2D {
+	GDCLASS(Root, Node2D)
 
 protected:
 	static void _bind_methods();
