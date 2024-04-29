@@ -76,9 +76,9 @@ Level::Level() {
     }
 
     int i = 0;
-    for (int x = -120 + HALF_TILE; x < 120 + TILE_SIZE + HALF_TILE; x += TILE_SIZE, i++) {
+    for (int x = HALF_TILE; x < TILE_COUNT_X * TILE_SIZE + HALF_TILE; x += TILE_SIZE, i++) {
         int j = 0;
-        for (int y = -96 + HALF_TILE; y < 96 + TILE_SIZE + HALF_TILE; y += TILE_SIZE, j++) {
+        for (int y = HALF_TILE; y < TILE_COUNT_Y * TILE_SIZE + HALF_TILE; y += TILE_SIZE, j++) {
             auto tile = memnew(Tile(this, Vector2(x, y), Vector2i(i, j)));
             tile->set_process_priority(static_cast<int>(ProcessingPriority::Tiles));
             tile->set_physics_process_priority(static_cast<int>(PhysicsProcessingPriority::Tiles));
@@ -87,16 +87,16 @@ Level::Level() {
     }
 
     // Setup player
-    m_player = memnew(Player(this, Vector2(0, 0)));
+    m_player = memnew(Player(this, Vector2{CAMERA_WIDTH / 2, CAMERA_HEIGHT / 2}));
     m_player->set_process_priority(static_cast<int>(ProcessingPriority::Player));
     m_player->set_physics_process_priority(static_cast<int>(PhysicsProcessingPriority::Player));
     m_mobs_node->add_child(m_player);
 
     // Setup camera
     m_camera = memnew(Camera2D);
-    m_camera->set_zoom(Vector2(4, 4));
+    m_camera->set_zoom(Vector2(SCREEN_ZOOM, SCREEN_ZOOM));
     add_child(m_camera);
-    m_camera_pos = Vector2{0, 0};
+    m_camera_pos = Vector2{CAMERA_WIDTH / 2, CAMERA_HEIGHT / 2};
 }
 
 Level::~Level() {
@@ -111,6 +111,8 @@ Vector2 Level::get_camera_pos() const {
 }
 
 void Level::_ready() {
+    get_window()->set_size(Vector2(SCREEN_WIDTH, SCREEN_HEIGHT));
+
     // // Finish setting up camera
     // const int cam_width = static_cast<int>(m_camera->get_viewport_rect().get_size().x / m_camera->get_zoom().x);
     // const int cam_height = static_cast<int>(m_camera->get_viewport_rect().get_size().y / m_camera->get_zoom().y);

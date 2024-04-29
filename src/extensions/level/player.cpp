@@ -9,7 +9,11 @@ using namespace godot;
 void Player::_bind_methods() {
     ClassDB::bind_method(D_METHOD("get_pos"), &Player::get_pos);
 	ClassDB::bind_method(D_METHOD("set_pos", "pos"), &Player::set_pos);
-    ClassDB::add_property("Player", PropertyInfo(Variant::VECTOR2, "m_camera_pos"), "set_pos", "get_pos");
+    ClassDB::add_property("Player", PropertyInfo(Variant::VECTOR2, "m_pos"), "set_pos", "get_pos");
+
+    ClassDB::bind_method(D_METHOD("get_vel"), &Player::get_vel);
+	ClassDB::bind_method(D_METHOD("set_vel", "vel"), &Player::set_vel);
+    ClassDB::add_property("Player", PropertyInfo(Variant::VECTOR2, "m_vel"), "set_vel", "get_vel");
 }
 
 Player::Player() {
@@ -26,68 +30,35 @@ void Player::_process(double delta) {
 }
 
 void Player::_physics_process(double delta) {
-    const int maxvel = 2;
+    const int maxvel = 3;
     auto d = Vector2(
         (Input::get_singleton()->is_action_pressed("ui_right") - Input::get_singleton()->is_action_pressed("ui_left")) * maxvel,
         (Input::get_singleton()->is_action_pressed("ui_down") - Input::get_singleton()->is_action_pressed("ui_up")) * maxvel
     );
 
+    /* update player location in level */
+    m_pos += d;
+
+    /* update camera location in level */
     auto &cam_pos = m_level->m_camera_pos;
-    cam_pos += d;
+    cam_pos.x = m_pos.x;
+    /* vertical movement of camera lags behind player position to prevent jerkiness */
+    cam_pos.y += (m_pos.y - cam_pos.y) / 4;
 
-    if (cam_pos.x < 0) {
-        cam_pos.x = 0;
-    } else if (cam_pos.x > m_level->m_curmap.dimensions.x * TILE_SIZE - 240) {
-        cam_pos.x = m_level->m_curmap.dimensions.x * TILE_SIZE - 240;
+    if (cam_pos.x < CAMERA_WIDTH / 2) {
+        cam_pos.x = CAMERA_WIDTH / 2;
+    } else if (cam_pos.x > m_level->m_curmap.dimensions.x * TILE_SIZE - CAMERA_WIDTH / 2) {
+        cam_pos.x = m_level->m_curmap.dimensions.x * TILE_SIZE - CAMERA_WIDTH / 2;
     }
 
-    if (cam_pos.y < 0) {
-        cam_pos.y = 0;
-    } else if (cam_pos.y > m_level->m_curmap.dimensions.y * TILE_SIZE - 192) {
-        cam_pos.y = m_level->m_curmap.dimensions.y * TILE_SIZE - 192;
+    if (cam_pos.y < CAMERA_HEIGHT / 2) {
+        cam_pos.y = CAMERA_HEIGHT / 2;
+    } else if (cam_pos.y > m_level->m_curmap.dimensions.y * TILE_SIZE - CAMERA_HEIGHT / 2) {
+        cam_pos.y = m_level->m_curmap.dimensions.y * TILE_SIZE - CAMERA_HEIGHT / 2;
     }
 
-    // const int maxvel = 4;
-    // auto d = Vector2(
-    //     (Input::get_singleton()->is_action_pressed("ui_right") - Input::get_singleton()->is_action_pressed("ui_left")) * maxvel,
-    //     (Input::get_singleton()->is_action_pressed("ui_down") - Input::get_singleton()->is_action_pressed("ui_up")) * maxvel
-    // );
-
-    // /* update player position in level */
-    // m_pos += d;
-
-    // const auto cam_bounds = m_level->m_camera_bounds;
-    // auto &cam_pos = m_level->m_camera_pos;
-    // auto &cam_vel = m_level->m_camera_vel;
-
-    // /* update camera position in level */
-    // cam_pos.x += d.x;
-    // cam_pos.y += d.y;
-
-    // /* used by tiles to adjust their positions */
-    // cam_vel.x = d.x;
-    // cam_vel.y = d.y;
-
-    // // d.x < 0
-    // if (cam_pos.x < cam_bounds.get_position().x) {
-    //     cam_pos.x = cam_bounds.get_position().x;
-
-    // // d.x > 0
-    // } else if (cam_pos.x > cam_bounds.get_end().x) {
-    //     cam_pos.x = cam_bounds.get_end().x;
-    // }
-
-    // // d.y < 0
-    // if (cam_pos.y < cam_bounds.get_position().y) {
-    //     cam_pos.y = cam_bounds.get_position().y;
-
-    // // d.y > 0
-    // } else if (cam_pos.y > cam_bounds.get_end().y) {
-    //     cam_pos.y = cam_bounds.get_end().y;
-    // }
-
-    // /* update where player is located on screen */
-    // set_position(m_pos - cam_pos + m_level->m_camera_bounds.get_position());
+    /* update where player is located on screen */
+    set_position(m_pos - cam_pos);
 }
 
 void Player::set_pos(const Vector2 pos) {
@@ -96,4 +67,12 @@ void Player::set_pos(const Vector2 pos) {
 
 Vector2 Player::get_pos() const {
     return m_pos;
+}
+
+void Player::set_vel(const Vector2 vel) {
+    m_vel = vel;
+}
+
+Vector2 Player::get_vel() const {
+    return m_vel;
 }

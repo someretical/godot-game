@@ -24,11 +24,14 @@ public:
 
 	void set_pos(const Vector2 pos);
 	Vector2 get_pos() const;
+	void set_vel(const Vector2 vel);
+	Vector2 get_vel() const;
 
 	Level *m_level;
 	/* Keeps track of where the player actually is on the map */
 	/* Different than the coordinates of the player on the screen! */
 	Vector2 m_pos;
+	Vector2 m_vel;
 };
 
 }

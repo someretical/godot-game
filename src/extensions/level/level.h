@@ -11,13 +11,17 @@ namespace godot {
 
 class Player;
 
-// In terms of tiles
-constexpr int SCREEN_TILE_WIDTH = 15;
-constexpr int SCREEN_TILE_HEIGHT = 12;
-constexpr int TILE_COUNT_X = SCREEN_TILE_WIDTH + 1;
-constexpr int TILE_COUNT_Y = SCREEN_TILE_HEIGHT + 1;
+constexpr int SCREEN_WIDTH = 960;
+constexpr int SCREEN_HEIGHT = 768;
+constexpr int SCREEN_ZOOM = 4;
+constexpr int CAMERA_WIDTH = SCREEN_WIDTH / SCREEN_ZOOM;
+constexpr int CAMERA_HEIGHT = SCREEN_HEIGHT / SCREEN_ZOOM;
 constexpr int TILE_SIZE = 16;
 constexpr int HALF_TILE = TILE_SIZE / 2;
+constexpr int SCREEN_TILE_WIDTH = CAMERA_WIDTH / TILE_SIZE;
+constexpr int SCREEN_TILE_HEIGHT = CAMERA_HEIGHT / TILE_SIZE;
+constexpr int TILE_COUNT_X = SCREEN_TILE_WIDTH + 1;
+constexpr int TILE_COUNT_Y = SCREEN_TILE_HEIGHT + 1;
 
 enum class PhysicsProcessingPriority {
 	Player = 10,
