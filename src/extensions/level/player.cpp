@@ -20,7 +20,7 @@ Player::Player() {
 }
 
 Player::Player(Level *level, Vector2 pos) : m_level(level), m_pos(pos) {
-    set_texture(m_level->m_tile_preloader->get_resource(m_level->m_tile_preloader->get_resource_list()[3]));
+    set_texture(m_level->m_player_preloader->get_resource("player_hitbox"));
 }
 
 Player::~Player() {
@@ -29,15 +29,79 @@ Player::~Player() {
 void Player::_process(double delta) {
 }
 
-void Player::_physics_process(double delta) {
-    const int maxvel = 3;
-    auto d = Vector2(
-        (Input::get_singleton()->is_action_pressed("ui_right") - Input::get_singleton()->is_action_pressed("ui_left")) * maxvel,
-        (Input::get_singleton()->is_action_pressed("ui_down") - Input::get_singleton()->is_action_pressed("ui_up")) * maxvel
-    );
+bool Player::check_collision(Vector2 pos) {
+    /* assume that the player has a hitbox size of 10x20 aligned with the bottom middle */
+    /* pos is centred in the player hitbox sprite which is 16x32 */
+    const auto &player_hitbox = Rect2(pos.x - 5, pos.y - 4, 10, 20);
 
-    /* update player location in level */
-    m_pos += d;
+    /* get top left tile indices */
+    const auto topleft = Vector2i(player_hitbox.get_position().x / TILE_SIZE, player_hitbox.get_position().y / TILE_SIZE);
+    const auto bottomright = Vector2i((player_hitbox.get_end().x) / TILE_SIZE, player_hitbox.get_end().y / TILE_SIZE);
+
+    /* check if any part of the player intersects with tiles */
+    for (int i = topleft.x; i <= bottomright.x; i++) {
+        for (int j = topleft.y; j <= bottomright.y; j++) {
+            /* assume that all blocks have a hitbox that is 16x16 */
+            if (m_level->m_curmap.tile_data[j][i] != -1) {
+                const auto tile_hitbox = Rect2i(i * TILE_SIZE, j * TILE_SIZE, TILE_SIZE, TILE_SIZE);
+
+                if (player_hitbox.intersects(tile_hitbox)) {
+                    return true;
+                }
+            }
+        }
+    }
+
+    return false;
+}
+
+void Player::process_dx(float dx) {
+    m_vel.x = m_vel.x * 0.8 + dx;
+
+    const auto new_pos = m_pos + Vector2(m_vel.x, 0);
+    if (check_collision(new_pos)) {
+        
+        if (m_vel.x > 0) {
+            m_pos.x = roundf(new_pos.x + (HALF_TILE + 3) - fmodf(new_pos.x, TILE_SIZE));
+        } else {
+            /* the 3 is the empty number of pixels between the hitbox and the side edges of the sprite */
+            m_pos.x = roundf(new_pos.x + (HALF_TILE - 3) - fmodf(new_pos.x, TILE_SIZE));
+        }
+
+        m_vel.x = 0;
+    } else {
+        m_pos.x += m_vel.x;
+    }
+}
+
+void Player::process_dy(float dy) {
+    if (dy != 0) {
+        m_vel.y = dy;
+    }
+
+    m_vel.y = m_vel.y + 0.5;
+    if (m_vel.y > 5) {
+        m_vel.y = 5;
+    }
+
+    const auto new_pos = m_pos + Vector2(0, m_vel.y);
+    if (check_collision(new_pos)) {
+        if (m_vel.y > 0) {
+            m_pos.y = roundf(new_pos.y - fmodf(new_pos.y, TILE_SIZE));
+        } else {
+            /* the 4 is the empty number of pixels between the top of the hitbox and the edge of the sprite */
+            m_pos.y = roundf(new_pos.y + (HALF_TILE - 4) - fmodf(new_pos.y, TILE_SIZE));
+        }
+        m_vel.y = 0;
+    } else {
+        m_pos.y += m_vel.y;
+    }
+}
+
+void Player::_physics_process(double delta) {
+    const auto maxvel = Vector2{0.5, 4};
+    process_dx((Input::get_singleton()->is_action_pressed("ui_right") - Input::get_singleton()->is_action_pressed("ui_left")) * maxvel.x);
+    process_dy((0 - Input::get_singleton()->is_action_pressed("ui_up")) * maxvel.y);
 
     /* update camera location in level */
     auto &cam_pos = m_level->m_camera_pos;

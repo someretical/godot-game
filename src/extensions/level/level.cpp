@@ -24,6 +24,7 @@ Level::Level() {
     const auto loader = ResourceLoader::get_singleton();
 
     m_player_preloader = memnew(ResourcePreloader);
+    m_player_preloader->add_resource("player_hitbox", loader->load("res://src/assets/player/player_hitbox.png"));
     add_child(m_player_preloader);
 
     m_tile_preloader = memnew(ResourcePreloader);
@@ -53,7 +54,7 @@ Level::Level() {
     m_map_node->add_child(m_mobs_node);
 
     // Create in memory map
-    m_curmap.dimensions = Vector2{30, 20};
+    m_curmap.dimensions = Vector2{100, 20};
     m_curmap.tile_data = memnew_arr(int *, m_curmap.dimensions.y);
     for (int j = 0; j < m_curmap.dimensions.y; j++) {
         m_curmap.tile_data[j] = memnew_arr(int, m_curmap.dimensions.x);
@@ -61,18 +62,19 @@ Level::Level() {
 
     for (int j = 1; j < m_curmap.dimensions.y - 1; j++) {
         for (int i = 1; i < m_curmap.dimensions.x - 1; i++) {
-            m_curmap.tile_data[j][i] = m_rng->randi_range(0, 10) == 0 ? 2 : -1;
+            m_curmap.tile_data[j][i] = m_rng->randi_range(0, 10) == 0 ? m_rng->randi_range(0, 10) : -1;
+            // m_curmap.tile_data[j][i] = -1;
         }
     }
 
     for (int j = 0; j < m_curmap.dimensions.y; j++) {
-        m_curmap.tile_data[j][0] = 0;
-        m_curmap.tile_data[j][m_curmap.dimensions.x - 1] = 0;
+        m_curmap.tile_data[j][0] = 1;
+        m_curmap.tile_data[j][m_curmap.dimensions.x - 1] = 1;
     }
 
     for (int j = 0; j < m_curmap.dimensions.x; j++) {
-        m_curmap.tile_data[0][j] = 0;
-        m_curmap.tile_data[m_curmap.dimensions.y - 1][j] = 0;
+        m_curmap.tile_data[0][j] = 1;
+        m_curmap.tile_data[m_curmap.dimensions.y - 1][j] = 1;
     }
 
     int i = 0;
