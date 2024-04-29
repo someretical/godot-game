@@ -21,6 +21,10 @@ window/size/viewport_width=960
 window/size/viewport_height=768
 window/size/resizable=false
 
+[filesystem]
+
+import/blender/enabled=false
+
 [rendering]
 
 textures/canvas_textures/default_texture_filter=0
