@@ -62,7 +62,7 @@ Level::Level() {
 
     for (int j = 1; j < m_curmap.dimensions.y - 1; j++) {
         for (int i = 1; i < m_curmap.dimensions.x - 1; i++) {
-            m_curmap.tile_data[j][i] = m_rng->randi_range(0, 10) == 0 ? m_rng->randi_range(0, 10) : -1;
+            m_curmap.tile_data[j][i] = m_rng->randi_range(0, 25) == 0 ? m_rng->randi_range(0, 10) : -1;
             // m_curmap.tile_data[j][i] = -1;
         }
     }
@@ -88,6 +88,8 @@ Level::Level() {
         }
     }
 
+    m_bounds = Rect2i{0, 0, m_curmap.dimensions.x * TILE_SIZE, m_curmap.dimensions.y * TILE_SIZE};
+
     // Setup player
     m_player = memnew(Player(this, Vector2{CAMERA_WIDTH / 2, CAMERA_HEIGHT / 2}));
     m_player->set_process_priority(static_cast<int>(ProcessingPriority::Player));
@@ -112,9 +114,26 @@ Vector2 Level::get_camera_pos() const {
     return m_camera_pos;
 }
 
-void Level::_ready() {
-    get_window()->set_size(Vector2(SCREEN_WIDTH, SCREEN_HEIGHT));
+void Level::update_camera() {
+    /* update camera location in level */
+    m_camera_pos.x = m_player->m_pos.x;
+    /* vertical movement of camera lags behind player position to prevent jerkiness */
+    m_camera_pos.y += (m_player->m_pos.y - m_camera_pos.y) / 4;
 
+    if (m_camera_pos.x < CAMERA_WIDTH / 2) {
+        m_camera_pos.x = CAMERA_WIDTH / 2;
+    } else if (m_camera_pos.x > m_curmap.dimensions.x * TILE_SIZE - CAMERA_WIDTH / 2) {
+        m_camera_pos.x = m_curmap.dimensions.x * TILE_SIZE - CAMERA_WIDTH / 2;
+    }
+
+    if (m_camera_pos.y < CAMERA_HEIGHT / 2) {
+        m_camera_pos.y = CAMERA_HEIGHT / 2;
+    } else if (m_camera_pos.y > m_curmap.dimensions.y * TILE_SIZE - CAMERA_HEIGHT / 2) {
+        m_camera_pos.y = m_curmap.dimensions.y * TILE_SIZE - CAMERA_HEIGHT / 2;
+    }
+}
+
+void Level::_ready() {
     // // Finish setting up camera
     // const int cam_width = static_cast<int>(m_camera->get_viewport_rect().get_size().x / m_camera->get_zoom().x);
     // const int cam_height = static_cast<int>(m_camera->get_viewport_rect().get_size().y / m_camera->get_zoom().y);

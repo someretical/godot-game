@@ -11,17 +11,17 @@ namespace godot {
 
 class Player;
 
-constexpr int SCREEN_WIDTH = 960;
-constexpr int SCREEN_HEIGHT = 768;
-constexpr int SCREEN_ZOOM = 4;
+constexpr int SCREEN_WIDTH = 480;
+constexpr int SCREEN_HEIGHT = 360;
+constexpr int SCREEN_ZOOM = 2;
 constexpr int CAMERA_WIDTH = SCREEN_WIDTH / SCREEN_ZOOM;
 constexpr int CAMERA_HEIGHT = SCREEN_HEIGHT / SCREEN_ZOOM;
 constexpr int TILE_SIZE = 16;
 constexpr int HALF_TILE = TILE_SIZE / 2;
 constexpr int SCREEN_TILE_WIDTH = CAMERA_WIDTH / TILE_SIZE;
-constexpr int SCREEN_TILE_HEIGHT = CAMERA_HEIGHT / TILE_SIZE;
+const int SCREEN_TILE_HEIGHT = ceill((float)CAMERA_HEIGHT / (float)TILE_SIZE);
 constexpr int TILE_COUNT_X = SCREEN_TILE_WIDTH + 1;
-constexpr int TILE_COUNT_Y = SCREEN_TILE_HEIGHT + 1;
+const int TILE_COUNT_Y = SCREEN_TILE_HEIGHT + 1;
 
 enum class PhysicsProcessingPriority {
 	Player = 10,
@@ -56,6 +56,7 @@ public:
 	void _ready() override;
 	void _physics_process(double delta) override;
 
+	void update_camera();
 	void set_camera_pos(const Vector2 pos);
 	Vector2 get_camera_pos() const;
 
@@ -66,6 +67,7 @@ public:
 	Vector2 m_camera_vel;
 	Player *m_player;
 	Camera2D *m_camera;
+	Rect2i m_bounds;
 	Rect2i m_camera_bounds;
 	Node *m_map_node;
 	Node *m_tiles_node;

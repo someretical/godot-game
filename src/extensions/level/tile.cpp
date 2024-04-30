@@ -41,17 +41,6 @@ void Tile::_process(double delta) {
 }
 
 void Tile::_physics_process(double delta) {
-    // const auto newx = curpos.x - camdelta.x;
-    // const auto newy = curpos.y - camdelta.y;
-
-    // const int x_mult = (newx < -TILE_SIZE / 2) - (newx > (SCREEN_TILE_WIDTH * TILE_SIZE + TILE_SIZE / 2));
-    // const int y_mult = (newy < -TILE_SIZE / 2) - (newy > (SCREEN_TILE_HEIGHT * TILE_SIZE + TILE_SIZE / 2));
-
-    // curpos.x += x_mult * TILE_COUNT_X * TILE_SIZE;
-    // m_tile_index.x += x_mult * TILE_COUNT_X;
-    // curpos.y += y_mult * TILE_COUNT_Y * TILE_SIZE;
-    // m_tile_index.y += y_mult * TILE_COUNT_Y;
-
     const auto campos = m_level->m_camera_pos;
 
     if (abs(m_pos.x - campos.x) > TILE_COUNT_X * HALF_TILE) {
