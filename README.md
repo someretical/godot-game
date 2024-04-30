@@ -18,6 +18,13 @@ this-repo\godot-cpp> scons platform=windows
 ```
 
 ## Building extensions
+
+### Debug
 ```
 this-repo> scons platform=windows
+```
+
+### Release
+```
+this-repo> scons platform=windows target=template_release
 ```
