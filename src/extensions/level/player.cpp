@@ -6,18 +6,18 @@
 
 using namespace godot;
 
-constexpr float GRAVITY_ACCEL = 0.5;
-constexpr float MAX_FALL_SPEED = 5;
+constexpr float GRAVITY_ACCEL = 0.6;
+constexpr float MAX_FALL_SPEED = 10;
 constexpr int JUMP_DELAY = 4;
-constexpr float JUMP_SPEED = -3.0;
-constexpr int MAX_JUMP_TIME = 22;
-constexpr int CONTINUOUS_JUMP_DELAY = 5;
+constexpr float JUMP_SPEED = -6.1;
+constexpr int MAX_JUMP_TIME = 24;
+constexpr int CONTINUOUS_JUMP_DELAY = 4;
 constexpr int DIRECTION_RIGHT = 1;
 constexpr int DIRECTION_LEFT = -1;
-constexpr float MAX_SPEED_X = 3;
+constexpr float MAX_SPEED_X = 4;
 constexpr float X_ACCEL = 0.05;
 constexpr float X_DECEL = 0.95;
-constexpr float X_CHANGE_DIR_ACCEL = 0.12;
+constexpr float X_CHANGE_DIR_ACCEL = 0.15;
 
 void Player::_bind_methods() {
     ClassDB::bind_method(D_METHOD("get_pos"), &Player::get_pos);
@@ -82,16 +82,16 @@ void Player::_process(double delta) {
 
     /* the sprites should be facing right by default */
     if (m_direction == DIRECTION_RIGHT) {
-        if (is_flipped_h()) set_flip_h(true);
+        set_flip_h(false);
     } else if (m_direction == DIRECTION_LEFT) {
-        if (!is_flipped_h()) set_flip_h(true);
+        set_flip_h(true);
     }
 }
 
 bool Player::check_collision(Vector2 pos) const {
-    /* assume that the player has a hitbox size of 10x20 aligned with the bottom middle */
+    /* the player has a hitbox size of 20x50 about m_pos */
     /* pos is centred in the player hitbox sprite which is 16x32 */
-    const auto &player_hitbox = Rect2(pos.x - 5, pos.y - 4, 10, 20);
+    const auto &player_hitbox = Rect2(pos.x - 10, pos.y - 25, 20, 50);
 
     /* check that player is still within level */
     if (!m_level->m_bounds.encloses(player_hitbox)) {
@@ -162,10 +162,10 @@ void Player::process_x() {
             the only way to fix this is to add an extra check but since collision checking is expensive, the cheap alternative is to just mention the constraint that the maximum velocity in a direction should be less than or equal to the minimum distance between the player's centre and the edge of the player's hitbox
             this affects both X and Y directions but extra care should be taken in the Y direction as the hitbox is usually not symmetrical
             */
-            m_pos.x = roundf(new_pos.x + (HALF_TILE + 3) - fmodf(new_pos.x, TILE_SIZE));
+            m_pos.x = roundf(new_pos.x + (HALF_TILE + 6) - fmodf(new_pos.x, TILE_SIZE));
         } else {
             /* the 3 is the empty number of pixels between the hitbox and the side edges of the sprite */
-            m_pos.x = roundf(new_pos.x + (HALF_TILE - 3) - fmodf(new_pos.x, TILE_SIZE));
+            m_pos.x = roundf(new_pos.x + (HALF_TILE - 6) - fmodf(new_pos.x, TILE_SIZE));
         }
 
         /* make the player fall straight down if they were in the middle of a jump and ran into something horizontally */
@@ -240,14 +240,14 @@ void Player::process_y() {
                 m_jump_time = 0;
             }
 
-            m_pos.y = roundf(new_pos.y - fmodf(new_pos.y, TILE_SIZE));
+            m_pos.y = roundf(new_pos.y + (7) - fmodf(new_pos.y, TILE_SIZE));
         } else {
             /* player has hit their head on the bottom side of a tile */
             /* increase jump time artificially so the player cannot "stick" to the bottom side of the side */
             m_jump_time = MAX_JUMP_TIME + 1;
 
             /* the 4 is the empty number of pixels between the top of the hitbox and the edge of the sprite */
-            m_pos.y = roundf(new_pos.y + (HALF_TILE - 4) - fmodf(new_pos.y, TILE_SIZE));
+            m_pos.y = roundf(new_pos.y + (TILE_SIZE - 7) - fmodf(new_pos.y, TILE_SIZE));
         }
         m_vel.y = 0;
     } else {

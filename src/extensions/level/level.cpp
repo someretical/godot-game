@@ -48,6 +48,13 @@ Level::Level() {
     m_tile_preloader->add_resource("Blue-8", loader->load("src/assets/tiles/blue/Blue-8.png"));
     m_tile_preloader->add_resource("Blue-9", loader->load("src/assets/tiles/blue/Blue-9.png"));
     m_tile_preloader->add_resource("Block-Gold", loader->load("src/assets/tiles/Block-Gold.png"));
+    m_tile_preloader->add_resource("Block-Wood", loader->load("src/assets/tiles/wood/Block-Wood.png"));
+    m_tile_preloader->add_resource("Wood-0", loader->load("src/assets/tiles/wood/Wood-0.png"));
+    m_tile_preloader->add_resource("Wood-1", loader->load("src/assets/tiles/wood/Wood-1.png"));
+    m_tile_preloader->add_resource("Wood-2", loader->load("src/assets/tiles/wood/Wood-2.png"));
+    m_tile_preloader->add_resource("Wood-3", loader->load("src/assets/tiles/wood/Wood-3.png"));
+    m_tile_preloader->add_resource("Wood-4", loader->load("src/assets/tiles/wood/Wood-4.png"));
+    m_tile_preloader->add_resource("Wood-5", loader->load("src/assets/tiles/wood/Wood-5.png"));
     add_child(m_tile_preloader);
 
     // add_resource("Coin1", loader->load("src/assets/entities/coin/Coin1.png"));
@@ -80,19 +87,19 @@ Level::Level() {
 
     for (int j = 1; j < m_curmap.dimensions.y - 1; j++) {
         for (int i = 1; i < m_curmap.dimensions.x - 1; i++) {
-            m_curmap.tile_data[j][i] = m_rng->randi_range(0, 25) == 0 ? 8 : -1;
+            m_curmap.tile_data[j][i] = m_rng->randi_range(0, 25) == 0 ? 9 : -1;
             // m_curmap.tile_data[j][i] = -1;
         }
     }
 
     for (int j = 0; j < m_curmap.dimensions.y; j++) {
-        m_curmap.tile_data[j][0] = 1;
-        m_curmap.tile_data[j][m_curmap.dimensions.x - 1] = 1;
+        m_curmap.tile_data[j][0] = 10;
+        m_curmap.tile_data[j][m_curmap.dimensions.x - 1] = 10;
     }
 
     for (int j = 0; j < m_curmap.dimensions.x; j++) {
-        m_curmap.tile_data[0][j] = 1;
-        m_curmap.tile_data[m_curmap.dimensions.y - 1][j] = 1;
+        m_curmap.tile_data[0][j] = 10;
+        m_curmap.tile_data[m_curmap.dimensions.y - 1][j] = 10;
     }
 
     int i = 0;

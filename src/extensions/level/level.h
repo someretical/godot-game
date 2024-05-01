@@ -17,10 +17,10 @@ constexpr int ceil_div(int numerator, int denominator) {
 
 constexpr int SCREEN_WIDTH = 480;
 constexpr int SCREEN_HEIGHT = 360;
-constexpr int SCREEN_ZOOM = 2;
+constexpr int SCREEN_ZOOM = 1;
 constexpr int CAMERA_WIDTH = SCREEN_WIDTH / SCREEN_ZOOM;
 constexpr int CAMERA_HEIGHT = SCREEN_HEIGHT / SCREEN_ZOOM;
-constexpr int TILE_SIZE = 16;
+constexpr int TILE_SIZE = 32;
 constexpr int HALF_TILE = TILE_SIZE / 2;
 constexpr int SCREEN_TILE_WIDTH = CAMERA_WIDTH / TILE_SIZE;
 constexpr int SCREEN_TILE_HEIGHT = ceil_div(CAMERA_HEIGHT, TILE_SIZE);
