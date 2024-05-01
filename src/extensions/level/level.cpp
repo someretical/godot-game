@@ -129,6 +129,12 @@ Level::Level() {
 }
 
 Level::~Level() {
+    memdelete(m_rng);
+    for (int j = 0; j < m_curmap.dimensions.y; j++) {
+        memdelete_arr(m_curmap.tile_data[j]);
+    }
+    memdelete_arr(m_curmap.tile_data);
+    queue_free();
 }
 
 void Level::set_camera_pos(const Vector2 pos) {

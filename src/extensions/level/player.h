@@ -39,6 +39,8 @@ public:
 	int get_direction() const;
 	void set_jump_start_x(const float jump_start_x);
 	float get_jump_start_x() const;
+	void set_walk_frame(const float walk_frame);
+	float get_walk_frame() const;
 
 	Level *m_level;
 	/* Keeps track of where the player actually is on the map */
@@ -50,6 +52,7 @@ public:
 	int m_ground_time;
 	int m_direction;
 	float m_jump_start_x;
+	float m_walk_frame;
 };
 
 }
