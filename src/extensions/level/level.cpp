@@ -78,6 +78,9 @@ Level::Level() {
     m_mobs_node = memnew(Node);
     m_map_node->add_child(m_mobs_node);
 
+    m_particles_node = memnew(Node);
+    m_map_node->add_child(m_particles_node);
+
     // Create in memory map
     m_curmap.dimensions = Vector2{100, 20};
     m_curmap.tile_data = memnew_arr(int *, m_curmap.dimensions.y);

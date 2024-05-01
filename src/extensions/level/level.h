@@ -36,6 +36,7 @@ enum class PhysicsProcessingPriority {
 
 enum class ProcessingPriority {
 	Player = 10,
+	SkidCloud = 11,
 	Collectibles = 20,
 	Mobs = 30,
 	Tiles = 40
@@ -75,6 +76,7 @@ public:
 	Node *m_tiles_node;
 	Node *m_collectables_node;
 	Node *m_mobs_node;
+	Node *m_particles_node;
 	MapData m_curmap;
 };
 

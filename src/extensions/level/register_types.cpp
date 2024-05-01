@@ -3,6 +3,7 @@
 #include "level.h"
 #include "tile.h"
 #include "player.h"
+#include "skidcloud.h"
 
 #include <gdextension_interface.h>
 #include <godot_cpp/core/defs.hpp>
@@ -18,6 +19,7 @@ void initialize_liblevel(ModuleInitializationLevel p_level) {
     ClassDB::register_class<Level>();
     ClassDB::register_class<Tile>();
     ClassDB::register_class<Player>();
+    ClassDB::register_class<SkidCloud>();
 }
 
 void uninitialize_liblevel(ModuleInitializationLevel p_level) {

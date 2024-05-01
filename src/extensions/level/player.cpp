@@ -1,5 +1,6 @@
 #include "level.h"
 #include "player.h"
+#include "skidcloud.h"
 
 #include <algorithm>
 #include <godot_cpp/classes/input.hpp>
@@ -25,11 +26,6 @@ constexpr char *WALKING_FRAMES[] = {
     "MarioWalk2",
     "MarioWalk3",
     "MarioWalk4"
-};
-
-constexpr char *SMOKE_FRAMES[] = {
-    "Smoke1",
-    "Smoke2"
 };
 
 void Player::_bind_methods() {
@@ -107,6 +103,7 @@ void Player::_process(double delta) {
 }
 
 bool Player::check_collision(Vector2 pos) const {
+    /* actual player spite size is 28x54 */
     /* the player has a hitbox size of 16x50 about m_pos */
     /* except the top half of the hitbox is 4px shorter*/
     /* pos is centred in the player hitbox sprite which is 16x32 */
@@ -166,6 +163,11 @@ void Player::process_x() {
             if (m_direction * m_vel.x < 0) {
                 /* if we are turning around then the deceleration should be greater */
                 m_vel.x += m_direction * X_CHANGE_DIR_ACCEL;
+
+                /* create skid cloud */
+                SkidCloud *cloud = memnew(SkidCloud(m_level, m_pos));
+                cloud->set_process_priority(static_cast<int>(ProcessingPriority::SkidCloud));
+                m_level->m_particles_node->add_child(cloud);
             } else {
                 m_vel.x += m_direction * X_ACCEL;
             }
