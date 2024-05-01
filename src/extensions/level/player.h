@@ -21,7 +21,7 @@ public:
 
 	void _process(double delta) override;
 	void _physics_process(double delta) override;
-	bool Player::check_collision(Vector2 pos);
+	bool Player::check_collision(Vector2 pos) const;
 	void Player::process_x();
 	void Player::process_y();
 
@@ -37,6 +37,8 @@ public:
 	int get_ground_time() const;
 	void set_direction(const int direction);
 	int get_direction() const;
+	void set_jump_start_x(const float jump_start_x);
+	float get_jump_start_x() const;
 
 	Level *m_level;
 	/* Keeps track of where the player actually is on the map */

@@ -24,22 +24,40 @@ Level::Level() {
     const auto loader = ResourceLoader::get_singleton();
 
     m_player_preloader = memnew(ResourcePreloader);
-    m_player_preloader->add_resource("player_hitbox", loader->load("res://src/assets/player/player_hitbox.png"));
+    m_player_preloader->add_resource("MarioCrouch", loader->load("src/assets/player/MarioCrouch.png"));
+    m_player_preloader->add_resource("MarioDeath", loader->load("src/assets/player/MarioDeath.png"));
+    m_player_preloader->add_resource("MarioJump", loader->load("src/assets/player/MarioJump.png"));
+    m_player_preloader->add_resource("MarioSlide", loader->load("src/assets/player/MarioSlide.png"));
+    m_player_preloader->add_resource("MarioTurn", loader->load("src/assets/player/MarioTurn.png"));
+    m_player_preloader->add_resource("MarioWalk1", loader->load("src/assets/player/MarioWalk1.png"));
+    m_player_preloader->add_resource("MarioWalk2", loader->load("src/assets/player/MarioWalk2.png"));
+    m_player_preloader->add_resource("MarioWalk3", loader->load("src/assets/player/MarioWalk3.png"));
+    m_player_preloader->add_resource("MarioWalk4", loader->load("src/assets/player/MarioWalk4.png"));
+    m_player_preloader->add_resource("Smoke1", loader->load("src/assets/particles/Smoke1.png"));
+    m_player_preloader->add_resource("Smoke2", loader->load("src/assets/particles/Smoke2.png"));
     add_child(m_player_preloader);
 
     m_tile_preloader = memnew(ResourcePreloader);
-    m_tile_preloader->add_resource("beacon", loader->load("res://src/assets/tiles/beacon.png"));
-    m_tile_preloader->add_resource("bedrock", loader->load("res://src/assets/tiles/bedrock.png"));
-    m_tile_preloader->add_resource("bee_nest_front", loader->load("res://src/assets/tiles/bee_nest_front.png"));
-    m_tile_preloader->add_resource("blackstone", loader->load("res://src/assets/tiles/blackstone.png"));
-    m_tile_preloader->add_resource("cobblestone", loader->load("res://src/assets/tiles/cobblestone.png"));
-    m_tile_preloader->add_resource("cobweb", loader->load("res://src/assets/tiles/cobweb.png"));
-    m_tile_preloader->add_resource("dirt", loader->load("res://src/assets/tiles/dirt.png"));
-    m_tile_preloader->add_resource("grass_block_side", loader->load("res://src/assets/tiles/grass_block_side.png"));
-    m_tile_preloader->add_resource("red_sand", loader->load("res://src/assets/tiles/red_sand.png"));
-    m_tile_preloader->add_resource("sand", loader->load("res://src/assets/tiles/sand.png"));
-    m_tile_preloader->add_resource("smooth_stone", loader->load("res://src/assets/tiles/smooth_stone.png"));
+    m_tile_preloader->add_resource("Blue-1", loader->load("src/assets/tiles/blue/Blue-1.png"));
+    m_tile_preloader->add_resource("Blue-2", loader->load("src/assets/tiles/blue/Blue-2.png"));
+    m_tile_preloader->add_resource("Blue-3", loader->load("src/assets/tiles/blue/Blue-3.png"));
+    m_tile_preloader->add_resource("Blue-4", loader->load("src/assets/tiles/blue/Blue-4.png"));
+    m_tile_preloader->add_resource("Blue-5", loader->load("src/assets/tiles/blue/Blue-5.png"));
+    m_tile_preloader->add_resource("Blue-6", loader->load("src/assets/tiles/blue/Blue-6.png"));
+    m_tile_preloader->add_resource("Blue-7", loader->load("src/assets/tiles/blue/Blue-7.png"));
+    m_tile_preloader->add_resource("Blue-8", loader->load("src/assets/tiles/blue/Blue-8.png"));
+    m_tile_preloader->add_resource("Blue-9", loader->load("src/assets/tiles/blue/Blue-9.png"));
+    m_tile_preloader->add_resource("Block-Gold", loader->load("src/assets/tiles/Block-Gold.png"));
     add_child(m_tile_preloader);
+
+    // add_resource("Coin1", loader->load("src/assets/entities/coin/Coin1.png"));
+    // add_resource("Coin2", loader->load("src/assets/entities/coin/Coin2.png"));
+    // add_resource("Coin3", loader->load("src/assets/entities/coin/Coin3.png"));
+    // add_resource("Coin4", loader->load("src/assets/entities/coin/Coin4.png"));
+    // add_resource("Question1", loader->load("src/assets/tiles/question/Question1.png"));
+    // add_resource("Question2", loader->load("src/assets/tiles/question/Question2.png"));
+    // add_resource("Question3", loader->load("src/assets/tiles/question/Question3.png"));
+    // add_resource("Question4", loader->load("src/assets/tiles/question/Question4.png"));
 
     m_map_node = memnew(Node);
     add_child(m_map_node);
@@ -62,7 +80,7 @@ Level::Level() {
 
     for (int j = 1; j < m_curmap.dimensions.y - 1; j++) {
         for (int i = 1; i < m_curmap.dimensions.x - 1; i++) {
-            m_curmap.tile_data[j][i] = m_rng->randi_range(0, 25) == 0 ? m_rng->randi_range(0, 10) : -1;
+            m_curmap.tile_data[j][i] = m_rng->randi_range(0, 25) == 0 ? 8 : -1;
             // m_curmap.tile_data[j][i] = -1;
         }
     }
@@ -134,20 +152,6 @@ void Level::update_camera() {
 }
 
 void Level::_ready() {
-    // // Finish setting up camera
-    // const int cam_width = static_cast<int>(m_camera->get_viewport_rect().get_size().x / m_camera->get_zoom().x);
-    // const int cam_height = static_cast<int>(m_camera->get_viewport_rect().get_size().y / m_camera->get_zoom().y);
-    // const int map_width = m_curmap.dimensions.x * TILE_SIZE;
-    // const int map_height = m_curmap.dimensions.y * TILE_SIZE;
-    // // Last 2 arguments for Rect2i are the width and height, not the coords of the bottom right corner
-    // m_camera_bounds = Rect2i{cam_width / 2, cam_height / 2, map_width - cam_width, map_height - cam_height};
-    // m_camera_pos = Vector2{(float)m_camera_bounds.get_position().x, (float)m_camera_bounds.get_end().y};
-    // m_camera->set_offset(m_camera_bounds.get_position());
-
-    // /* where player is located in the level */
-    // m_player->m_pos = m_camera_pos;
-    // /* where player is located on screen */
-    // m_player->set_position(Vector2(cam_width / 2, cam_height / 2));
 }
 
 void Level::_physics_process(double delta) {

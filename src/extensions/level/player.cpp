@@ -43,13 +43,18 @@ void Player::_bind_methods() {
     ClassDB::bind_method(D_METHOD("get_direction"), &Player::get_direction);
     ClassDB::bind_method(D_METHOD("set_direction", "m_direction"), &Player::set_direction);
     ClassDB::add_property("Player", PropertyInfo(Variant::INT, "m_direction"), "set_direction", "get_direction");
+
+    ClassDB::bind_method(D_METHOD("get_jump_start_x"), &Player::get_jump_start_x);
+    ClassDB::bind_method(D_METHOD("set_jump_start_x", "m_jump_start_x"), &Player::set_jump_start_x);
+    ClassDB::add_property("Player", PropertyInfo(Variant::FLOAT, "m_jump_start_x"), "set_jump_start_x", "get_jump_start_x");
 }
 
 Player::Player() {
 }
 
 Player::Player(Level *level, Vector2 pos) : m_level(level), m_pos(pos) {
-    set_texture(m_level->m_player_preloader->get_resource("player_hitbox"));
+    set_texture(m_level->m_player_preloader->get_resource("MarioWalk1"));
+    set_flip_h(false);
 
     m_jump_time = 0;
     m_fall_time = 0;
@@ -64,13 +69,15 @@ Player::~Player() {
 void Player::_process(double delta) {
     if (m_fall_time > 0) {
         if (m_vel.y < 0) {
-            /* set texture to jumping up one */
+            set_texture(m_level->m_player_preloader->get_resource("MarioJump"));
         } else {
             /* set texture to the falling one */
             /* could potentially reuse the walking sprite */
+            set_texture(m_level->m_player_preloader->get_resource("MarioWalk3"));
         }
     } else {
         /* set texture to walking one */
+        set_texture(m_level->m_player_preloader->get_resource("MarioWalk1"));
     }
 
     /* the sprites should be facing right by default */
@@ -81,7 +88,7 @@ void Player::_process(double delta) {
     }
 }
 
-bool Player::check_collision(Vector2 pos) {
+bool Player::check_collision(Vector2 pos) const {
     /* assume that the player has a hitbox size of 10x20 aligned with the bottom middle */
     /* pos is centred in the player hitbox sprite which is 16x32 */
     const auto &player_hitbox = Rect2(pos.x - 5, pos.y - 4, 10, 20);
@@ -307,4 +314,12 @@ void Player::set_direction(const int direction) {
 
 int Player::get_direction() const {
     return m_direction;
+}
+
+void Player::set_jump_start_x(const float jump_start_x) {
+    m_jump_start_x = jump_start_x;
+}
+
+float Player::get_jump_start_x() const {
+    return m_jump_start_x;
 }
