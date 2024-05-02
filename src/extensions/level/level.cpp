@@ -23,20 +23,6 @@ Level::Level() {
 
     const auto loader = ResourceLoader::get_singleton();
 
-    m_player_preloader = memnew(ResourcePreloader);
-    m_player_preloader->add_resource("MarioCrouch", loader->load("src/assets/player/MarioCrouch.png"));
-    m_player_preloader->add_resource("MarioDeath", loader->load("src/assets/player/MarioDeath.png"));
-    m_player_preloader->add_resource("MarioJump", loader->load("src/assets/player/MarioJump.png"));
-    m_player_preloader->add_resource("MarioSlide", loader->load("src/assets/player/MarioSlide.png"));
-    m_player_preloader->add_resource("MarioTurn", loader->load("src/assets/player/MarioTurn.png"));
-    m_player_preloader->add_resource("MarioWalk1", loader->load("src/assets/player/MarioWalk1.png"));
-    m_player_preloader->add_resource("MarioWalk2", loader->load("src/assets/player/MarioWalk2.png"));
-    m_player_preloader->add_resource("MarioWalk3", loader->load("src/assets/player/MarioWalk3.png"));
-    m_player_preloader->add_resource("MarioWalk4", loader->load("src/assets/player/MarioWalk4.png"));
-    m_player_preloader->add_resource("Smoke1", loader->load("src/assets/particles/Smoke1.png"));
-    m_player_preloader->add_resource("Smoke2", loader->load("src/assets/particles/Smoke2.png"));
-    add_child(m_player_preloader);
-
     m_tile_preloader = memnew(ResourcePreloader);
     m_tile_preloader->add_resource("Blue-1", loader->load("src/assets/tiles/blue/Blue-1.png"));
     m_tile_preloader->add_resource("Blue-2", loader->load("src/assets/tiles/blue/Blue-2.png"));
@@ -96,12 +82,12 @@ Level::Level() {
     }
 
     for (int j = 0; j < m_curmap.dimensions.y; j++) {
-        m_curmap.tile_data[j][0] = 10;
-        m_curmap.tile_data[j][m_curmap.dimensions.x - 1] = 10;
+        m_curmap.tile_data[j][0] = -1;
+        m_curmap.tile_data[j][m_curmap.dimensions.x - 1] = -1;
     }
 
     for (int j = 0; j < m_curmap.dimensions.x; j++) {
-        m_curmap.tile_data[0][j] = 10;
+        m_curmap.tile_data[0][j] = -1;
         m_curmap.tile_data[m_curmap.dimensions.y - 1][j] = 10;
     }
 
@@ -110,18 +96,14 @@ Level::Level() {
         int j = 0;
         for (int y = HALF_TILE; y < TILE_COUNT_Y * TILE_SIZE + HALF_TILE; y += TILE_SIZE, j++) {
             auto tile = memnew(Tile(this, Vector2(x, y), Vector2i(i, j)));
-            tile->set_process_priority(static_cast<int>(ProcessingPriority::Tiles));
-            tile->set_physics_process_priority(static_cast<int>(PhysicsProcessingPriority::Tiles));
             m_tiles_node->add_child(tile);
         }
     }
 
-    m_bounds = Rect2i{0, 0, m_curmap.dimensions.x * TILE_SIZE, m_curmap.dimensions.y * TILE_SIZE};
+    m_bounds = Rect2{0, 0, static_cast<float>(m_curmap.dimensions.x * TILE_SIZE), static_cast<float>(m_curmap.dimensions.y * TILE_SIZE)};
 
     // Setup player
     m_player = memnew(Player(this, Vector2{CAMERA_WIDTH / 2, CAMERA_HEIGHT / 2}));
-    m_player->set_process_priority(static_cast<int>(ProcessingPriority::Player));
-    m_player->set_physics_process_priority(static_cast<int>(PhysicsProcessingPriority::Player));
     m_mobs_node->add_child(m_player);
 
     // Setup camera

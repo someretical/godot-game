@@ -1,0 +1,60 @@
+[gd_resource type="SpriteFrames" load_steps=7 format=3 uid="uid://gtca6l34a2ce"]
+
+[ext_resource type="Texture2D" uid="uid://yfwoh4oxy3i0" path="res://src/assets/player/MarioWalk3.png" id="1_udru2"]
+[ext_resource type="Texture2D" uid="uid://dkycqtr6obllw" path="res://src/assets/player/MarioJump.png" id="2_ptnh0"]
+[ext_resource type="Texture2D" uid="uid://d2tch1pdxjl25" path="res://src/assets/player/MarioTurn.png" id="3_lfvwq"]
+[ext_resource type="Texture2D" uid="uid://nhm6gd8oxt3o" path="res://src/assets/player/MarioWalk1.png" id="4_ndf2c"]
+[ext_resource type="Texture2D" uid="uid://4yiv5e70khy2" path="res://src/assets/player/MarioWalk2.png" id="5_37ija"]
+[ext_resource type="Texture2D" uid="uid://dpqhpg0m1746j" path="res://src/assets/player/MarioWalk4.png" id="6_rrbvf"]
+
+[resource]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("1_udru2")
+}],
+"loop": true,
+"name": &"fall",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("4_ndf2c")
+}],
+"loop": true,
+"name": &"idle",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("2_ptnh0")
+}],
+"loop": true,
+"name": &"jump",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("3_lfvwq")
+}],
+"loop": true,
+"name": &"turn",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("4_ndf2c")
+}, {
+"duration": 1.0,
+"texture": ExtResource("5_37ija")
+}, {
+"duration": 1.0,
+"texture": ExtResource("1_udru2")
+}, {
+"duration": 1.0,
+"texture": ExtResource("6_rrbvf")
+}],
+"loop": true,
+"name": &"walk",
+"speed": 5.0
+}]

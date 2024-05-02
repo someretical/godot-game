@@ -1,15 +1,23 @@
 #ifndef PLAYER_H
 #define PLAYER_H
 
-#include <godot_cpp/classes/sprite2d.hpp>
+#include <godot_cpp/classes/animated_sprite2d.hpp>
 #include <godot_cpp/templates/vector.hpp>
 
 namespace godot {
 
 class Level;
 
-class Player : public Sprite2D {
-	GDCLASS(Player, Sprite2D)
+enum class PlayerAction {
+	IDLE,
+	WALKING,
+	TURNING,
+	JUMPING,
+	FALLING
+};
+
+class Player : public AnimatedSprite2D {
+	GDCLASS(Player, AnimatedSprite2D)
 
 protected:
 	static void _bind_methods();
@@ -39,8 +47,6 @@ public:
 	int get_direction() const;
 	void set_jump_start_x(const float jump_start_x);
 	float get_jump_start_x() const;
-	void set_walk_frame(const float walk_frame);
-	float get_walk_frame() const;
 
 	Level *m_level;
 	/* Keeps track of where the player actually is on the map */
@@ -52,7 +58,7 @@ public:
 	int m_ground_time;
 	int m_direction;
 	float m_jump_start_x;
-	float m_walk_frame;
+	enum PlayerAction m_action;
 };
 
 }

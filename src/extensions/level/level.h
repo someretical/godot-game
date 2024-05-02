@@ -66,12 +66,11 @@ public:
 	Vector2 get_camera_pos() const;
 
 	RandomNumberGenerator *m_rng;
-	ResourcePreloader *m_player_preloader;
 	ResourcePreloader *m_tile_preloader;
 	Vector2 m_camera_pos;
 	Player *m_player;
 	Camera2D *m_camera;
-	Rect2i m_bounds;
+	Rect2 m_bounds;
 	Node *m_map_node;
 	Node *m_tiles_node;
 	Node *m_collectables_node;

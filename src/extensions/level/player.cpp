@@ -2,9 +2,12 @@
 #include "player.h"
 #include "skidcloud.h"
 
+#include <cassert>
 #include <algorithm>
+#include <godot_cpp/classes/resource_loader.hpp>
 #include <godot_cpp/classes/input.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
+#include <godot_cpp/classes/sprite_frames.hpp>
 
 using namespace godot;
 
@@ -16,16 +19,58 @@ constexpr int MAX_JUMP_TIME = 24;
 constexpr int CONTINUOUS_JUMP_DELAY = 4;
 constexpr int DIRECTION_RIGHT = 1;
 constexpr int DIRECTION_LEFT = -1;
-constexpr float MAX_SPEED_X = 4;
-constexpr float X_ACCEL = 0.05;
+constexpr float MAX_SPEED_X = 3.3;
+constexpr float X_ACCEL = 0.1;
 constexpr float X_DECEL = 0.95;
-constexpr float X_CHANGE_DIR_ACCEL = 0.15;
+constexpr float X_CHANGE_DIR_ACCEL = 0.2;
+constexpr int SMOKE_PARTICLE_DELAY = 7;
 
-constexpr char *WALKING_FRAMES[] = {
-    "MarioWalk1",
-    "MarioWalk2",
-    "MarioWalk3",
-    "MarioWalk4"
+/*
+Player overview:
+
++---+---+----+---+---+
+|         11         |
++   +---+----+---+   +
+|   |     21     |   |
++   +   +----+   +   +
+| 8 | 8 | 00 | 8 | 8 |
++   +   +----+   +   +
+|   |     25     |   |
++   +---+----+---+   +
+|         7          |
++---+---+----+---+---+
+
+- innermost box represents the centre of the sprite walk1
+- middle box represents the player hitbox (offset)
+- outer box represents the padding to ensure the hitbox fits within a 32x64 space (gap)
+*/
+
+constexpr int HITBOX_HEIGHT = 46;
+constexpr int HITBOX_WIDTH = 16;
+constexpr int HITBOX_TOP_OFFSET = 21;
+constexpr int HITBOX_TOP_GAP = 11;
+constexpr int HITBOX_BOTTOM_OFFSET = 25;
+constexpr int HITBOX_BOTTOM_GAP = 7;
+constexpr int HITBOX_LEFT_OFFSET = 8;
+constexpr int HITBOX_LEFT_GAP = 8;
+constexpr int HITBOX_RIGHT_OFFSET = 8;
+constexpr int HITBOX_RIGHT_GAP = 8;
+
+static_assert(HITBOX_RIGHT_GAP + HITBOX_RIGHT_OFFSET == HALF_TILE);
+static_assert(HITBOX_LEFT_GAP + HITBOX_LEFT_OFFSET == HALF_TILE);
+static_assert(HITBOX_TOP_GAP + HITBOX_TOP_OFFSET == TILE_SIZE);
+static_assert(HITBOX_BOTTOM_GAP + HITBOX_BOTTOM_OFFSET == TILE_SIZE);
+static_assert(HITBOX_TOP_OFFSET + HITBOX_BOTTOM_OFFSET == HITBOX_HEIGHT);
+static_assert(HITBOX_LEFT_OFFSET + HITBOX_RIGHT_OFFSET == HITBOX_WIDTH);
+static_assert(HITBOX_TOP_GAP + HITBOX_TOP_OFFSET + HITBOX_BOTTOM_GAP + HITBOX_BOTTOM_OFFSET == TILE_SIZE * 2);
+static_assert(HITBOX_LEFT_GAP + HITBOX_LEFT_OFFSET + HITBOX_RIGHT_GAP + HITBOX_RIGHT_OFFSET == TILE_SIZE);
+
+const char *PLAYER_ANIMATIONS[] = {
+	"idle",
+	"walk",
+	"turn",
+	"jump",
+	"fall"
 };
 
 void Player::_bind_methods() {
@@ -56,10 +101,6 @@ void Player::_bind_methods() {
     ClassDB::bind_method(D_METHOD("get_jump_start_x"), &Player::get_jump_start_x);
     ClassDB::bind_method(D_METHOD("set_jump_start_x", "m_jump_start_x"), &Player::set_jump_start_x);
     ClassDB::add_property("Player", PropertyInfo(Variant::FLOAT, "m_jump_start_x"), "set_jump_start_x", "get_jump_start_x");
-
-    ClassDB::bind_method(D_METHOD("get_walk_frame"), &Player::get_walk_frame);
-    ClassDB::bind_method(D_METHOD("set_walk_frame", "m_walk_frame"), &Player::set_walk_frame);
-    ClassDB::add_property("Player", PropertyInfo(Variant::FLOAT, "m_walk_frame"), "set_walk_frame", "get_walk_frame");
 }
 
 Player::Player() {
@@ -71,9 +112,13 @@ Player::Player(Level *level, Vector2 pos) : m_level(level), m_pos(pos) {
     m_ground_time = 0;
     m_direction = DIRECTION_RIGHT;
     m_jump_start_x = 0;
-    m_walk_frame = 0;
+    m_action = PlayerAction::IDLE;
 
-    set_texture(m_level->m_player_preloader->get_resource(WALKING_FRAMES[0]));
+    set_process_priority(static_cast<int>(ProcessingPriority::Player));
+    set_physics_process_priority(static_cast<int>(PhysicsProcessingPriority::Player));
+
+    set_sprite_frames(ResourceLoader::get_singleton()->load("src/assets/player/animation.tres"));
+    set_animation(PLAYER_ANIMATIONS[static_cast<int>(m_action)]);
     set_flip_h(false);
 }
 
@@ -83,15 +128,33 @@ Player::~Player() {
 void Player::_process(double delta) {
     if (m_fall_time > 0) {
         if (m_vel.y < 0) {
-            set_texture(m_level->m_player_preloader->get_resource("MarioJump"));
+            set_animation("jump");
         } else {
             /* set texture to the falling one */
-            /* could potentially reuse the walking sprite */
-            set_texture(m_level->m_player_preloader->get_resource(WALKING_FRAMES[2]));
+            set_animation("fall");
         }
     } else {
         /* set texture to walking one */
-        set_texture(m_level->m_player_preloader->get_resource(WALKING_FRAMES[static_cast<int>(m_walk_frame) % 4]));
+        if (m_vel.x == 0) {
+            if (get_animation() == StringName("walk")) {
+                if (get_frame() == 0) {
+                    set_animation("idle");
+                } else {
+                    /* do nothing as we want a smooth transition to the idle frame */
+                }
+            } else {
+                set_animation("idle");
+            }
+        } else {
+            if (m_action == PlayerAction::TURNING) {
+                set_animation(PLAYER_ANIMATIONS[static_cast<int>(m_action)]);
+            } else if (m_action != PlayerAction::WALKING || (get_animation() != StringName("walk") && m_action == PlayerAction::WALKING)) {
+                m_action = PlayerAction::WALKING;
+                set_animation(PLAYER_ANIMATIONS[static_cast<int>(m_action)]);
+                play();
+            }
+            set_speed_scale(std::min(std::max(0.6f, abs(m_vel.x) * 0.6f), 2.0f));
+        }
     }
 
     /* the sprites should be facing right by default */
@@ -107,7 +170,7 @@ bool Player::check_collision(Vector2 pos) const {
     /* the player has a hitbox size of 16x50 about m_pos */
     /* except the top half of the hitbox is 4px shorter*/
     /* pos is centred in the player hitbox sprite which is 16x32 */
-    const auto &player_hitbox = Rect2(pos.x - 8, pos.y - 21, 16, 46);
+    const auto &player_hitbox = Rect2(pos.x - HITBOX_LEFT_OFFSET, pos.y - HITBOX_TOP_OFFSET, HITBOX_WIDTH, HITBOX_HEIGHT);
 
     /* check that player is still within level */
     if (!m_level->m_bounds.encloses(player_hitbox)) {
@@ -153,7 +216,6 @@ void Player::process_x() {
             m_vel.x = m_vel.x * X_DECEL;
             if (abs(m_vel.x) < 0.1) {
                 m_vel.x = 0;
-                m_walk_frame = 0;
             }
         }
     } else {
@@ -164,11 +226,15 @@ void Player::process_x() {
                 /* if we are turning around then the deceleration should be greater */
                 m_vel.x += m_direction * X_CHANGE_DIR_ACCEL;
 
-                /* create skid cloud */
-                SkidCloud *cloud = memnew(SkidCloud(m_level, m_pos));
-                cloud->set_process_priority(static_cast<int>(ProcessingPriority::SkidCloud));
-                m_level->m_particles_node->add_child(cloud);
+                m_action = PlayerAction::TURNING;
+
+                /* create skid cloud every SMOKE_PARTICLE_DELAY ticks the player is on the ground */
+                if (m_fall_time == 0 && m_ground_time % SMOKE_PARTICLE_DELAY == 0) {
+                    SkidCloud *cloud = memnew(SkidCloud(m_level, m_pos));
+                    m_level->m_particles_node->add_child(cloud);
+                }
             } else {
+                m_action = PlayerAction::WALKING;
                 m_vel.x += m_direction * X_ACCEL;
             }
         }
@@ -187,10 +253,9 @@ void Player::process_x() {
             the only way to fix this is to add an extra check but since collision checking is expensive, the cheap alternative is to just mention the constraint that the maximum velocity in a direction should be less than or equal to the minimum distance between the player's centre and the edge of the player's hitbox
             this affects both X and Y directions but extra care should be taken in the Y direction as the hitbox is usually not symmetrical
             */
-            m_pos.x = roundf(new_pos.x + (HALF_TILE + 8) - fmodf(new_pos.x, TILE_SIZE));
+            m_pos.x = roundf(new_pos.x + (HALF_TILE + HITBOX_RIGHT_GAP) - fmodf(new_pos.x, TILE_SIZE));
         } else {
-            /* the 3 is the empty number of pixels between the hitbox and the side edges of the sprite */
-            m_pos.x = roundf(new_pos.x + (HALF_TILE - 8) - fmodf(new_pos.x, TILE_SIZE));
+            m_pos.x = roundf(new_pos.x + (HALF_TILE - HITBOX_LEFT_GAP) - fmodf(new_pos.x, TILE_SIZE));
         }
 
         /* make the player fall straight down if they were in the middle of a jump and ran into something horizontally */
@@ -201,11 +266,8 @@ void Player::process_x() {
         }
 
         m_vel.x = 0;
-        m_walk_frame = 0;
     } else {
         m_pos.x += m_vel.x;
-        /* experimentally derived constants 💀 */
-        m_walk_frame += std::min(std::max(0.02f, abs(m_vel.x) / 6.0f), 0.14f);
     }
 }
 
@@ -268,14 +330,14 @@ void Player::process_y() {
                 m_jump_time = 0;
             }
 
-            m_pos.y = roundf(new_pos.y + (7) - fmodf(new_pos.y, TILE_SIZE));
+            m_pos.y = roundf(new_pos.y + HITBOX_BOTTOM_GAP - fmodf(new_pos.y, TILE_SIZE));
         } else {
             /* player has hit their head on the bottom side of a tile */
             /* increase jump time artificially so the player cannot "stick" to the bottom side of the side */
             m_jump_time = MAX_JUMP_TIME + 1;
 
-            /* the 4 is the empty number of pixels between the top of the hitbox and the edge of the sprite */
-            m_pos.y = roundf(new_pos.y + (TILE_SIZE - 11) - fmodf(new_pos.y, TILE_SIZE));
+            /* the 11 is the empty number of pixels between the top of the hitbox and the edge of the sprite */
+            m_pos.y = roundf(new_pos.y + (TILE_SIZE - HITBOX_TOP_GAP) - fmodf(new_pos.y, TILE_SIZE));
         }
         m_vel.y = 0;
     } else {
@@ -350,12 +412,4 @@ void Player::set_jump_start_x(const float jump_start_x) {
 
 float Player::get_jump_start_x() const {
     return m_jump_start_x;
-}
-
-void Player::set_walk_frame(const float walk_frame) {
-    m_walk_frame = walk_frame;
-}
-
-float Player::get_walk_frame() const {
-    return m_walk_frame;
 }

@@ -12,6 +12,8 @@ Tile::Tile() {
 }
 
 Tile::Tile(Level *level, Vector2 pos, Vector2i tile_index) : m_level(level), m_pos(pos), m_tile_index(tile_index) {
+    set_process_priority(static_cast<int>(ProcessingPriority::Tiles));
+    set_physics_process_priority(static_cast<int>(PhysicsProcessingPriority::Tiles));
 }
 
 Tile::~Tile() {
