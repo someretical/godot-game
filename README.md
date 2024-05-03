@@ -14,6 +14,7 @@ Currently only windows with MSVC is supported :skull:
 
 ```
 this-repo> python -m venv .venv
+this-repo> .\.venv\Scripts\activate
 this-repo> pip install scons
 ```
 
