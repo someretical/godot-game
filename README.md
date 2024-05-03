@@ -5,26 +5,22 @@ Currently only windows with MSVC is supported :skull:
 **VS Code must be opened from the VS developer command prompt to ensure all the build tools are loaded into the environment!!!**
 
 ## Cloning
+
 ```
 > git clone --recurse-submodules this-repo
 ```
 
-## Building the C++ bindings
+## Install scons
+
 ```
 this-repo> python -m venv .venv
 this-repo> pip install scons
-this-repo> cd godot-cpp
-this-repo\godot-cpp> scons platform=windows
 ```
 
-## Building extensions
+## Building
 
-### Debug
-```
-this-repo> scons platform=windows
-```
+First, replace the `program` value in `.vscode/launch.json` with the absolute path to your Godot executable.
 
-### Release
-```
-this-repo> scons platform=windows target=template_release
-```
+The debug task can now be run. It will take a while the first time.
+
+You can also run the release build task to generate an optimized version.

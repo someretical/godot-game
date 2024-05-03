@@ -15,6 +15,11 @@
                     "debug_symbols=yes",
                     "optimize=debug"
                 ]
+            },
+            "problemMatcher": [],
+            "group": {
+                "kind": "build",
+                "isDefault": true
             }
         },
         {
@@ -29,6 +34,10 @@
                     "debug_symbols=no",
                     "optimize=release"
                 ]
+            },
+            "problemMatcher": [],
+            "group": {
+                "kind": "build",
             }
         }
     ]
