@@ -5,6 +5,7 @@
 *.exp
 *.dll
 *.lib
+*.pdb
 *.exe
 *.sconsign*
 *.tmp

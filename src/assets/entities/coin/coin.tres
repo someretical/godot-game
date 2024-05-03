@@ -1,0 +1,26 @@
+[gd_resource type="SpriteFrames" load_steps=5 format=3 uid="uid://wsn2hxj30rhv"]
+
+[ext_resource type="Texture2D" uid="uid://uo7tw5oc0q4s" path="res://src/assets/entities/coin/coin1.png" id="1_q8pn7"]
+[ext_resource type="Texture2D" uid="uid://cjnyrynrj6otu" path="res://src/assets/entities/coin/coin2.png" id="2_rv2mc"]
+[ext_resource type="Texture2D" uid="uid://cgw0474p8ssnj" path="res://src/assets/entities/coin/coin3.png" id="3_lrf52"]
+[ext_resource type="Texture2D" uid="uid://eygmx8eb21py" path="res://src/assets/entities/coin/coin4.png" id="4_iymb2"]
+
+[resource]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("1_q8pn7")
+}, {
+"duration": 1.0,
+"texture": ExtResource("2_rv2mc")
+}, {
+"duration": 1.0,
+"texture": ExtResource("3_lrf52")
+}, {
+"duration": 1.0,
+"texture": ExtResource("4_iymb2")
+}],
+"loop": true,
+"name": &"default",
+"speed": 6.0
+}]

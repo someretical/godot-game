@@ -116,6 +116,7 @@ Player::Player(Level *level, Vector2 pos) : m_level(level), m_pos(pos) {
 
     set_process_priority(static_cast<int>(ProcessingPriority::Player));
     set_physics_process_priority(static_cast<int>(PhysicsProcessingPriority::Player));
+    set_z_index(static_cast<int>(ZIndex::Player));
 
     set_sprite_frames(ResourceLoader::get_singleton()->load("src/assets/player/animation.tres"));
     set_animation(PLAYER_ANIMATIONS[static_cast<int>(m_action)]);
@@ -185,7 +186,7 @@ bool Player::check_collision(Vector2 pos) const {
     for (int i = topleft.x; i <= bottomright.x; i++) {
         for (int j = topleft.y; j <= bottomright.y; j++) {
             /* assume that all blocks have a hitbox that is 16x16 */
-            if (m_level->m_curmap.tile_data[j][i] != -1) {
+            if (m_level->m_curmap.tile_data[j][i].m_tile_group != -1) {
                 const auto tile_hitbox = Rect2i(i * TILE_SIZE, j * TILE_SIZE, TILE_SIZE, TILE_SIZE);
 
                 if (player_hitbox.intersects(tile_hitbox)) {

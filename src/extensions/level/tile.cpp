@@ -1,5 +1,6 @@
 #include "tile.h"
 #include "level.h"
+#include "tile_data.h"
 
 #include <godot_cpp/variant/utility_functions.hpp>
 
@@ -14,6 +15,7 @@ Tile::Tile() {
 Tile::Tile(Level *level, Vector2 pos, Vector2i tile_index) : m_level(level), m_pos(pos), m_tile_index(tile_index) {
     set_process_priority(static_cast<int>(ProcessingPriority::Tiles));
     set_physics_process_priority(static_cast<int>(PhysicsProcessingPriority::Tiles));
+    set_z_index(static_cast<int>(ZIndex::Tiles));
 }
 
 Tile::~Tile() {
@@ -22,22 +24,22 @@ Tile::~Tile() {
 void Tile::_process(double delta) {
     if (
         m_tile_index.x < 0 || m_tile_index.y < 0 || 
-        m_tile_index.x >= m_level->m_curmap.dimensions.x || 
-        m_tile_index.y >= m_level->m_curmap.dimensions.y
+        m_tile_index.x >= m_level->m_curmap.m_dimensions.x || 
+        m_tile_index.y >= m_level->m_curmap.m_dimensions.y
     ) {
         set_visible(false);
         return;
     }
 
-    auto index = m_level->m_curmap.tile_data[m_tile_index.y][m_tile_index.x];
+    const auto data = m_level->m_curmap.tile_data[m_tile_index.y][m_tile_index.x];
 
-    if (index == -1) {
+    if (data.m_tile_group == -1 || data.m_variant == -1) {
         set_visible(false);
         return;
     }
 
     set_texture(
-        m_level->m_tile_preloader->get_resource(m_level->m_tile_preloader->get_resource_list()[index])
+        m_level->m_tile_preloader->get_resource(TileData::get_tile_variants()[data.m_tile_group][data.m_variant].data())
     );
     set_visible(true);
 }

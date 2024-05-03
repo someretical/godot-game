@@ -1,0 +1,35 @@
+{
+    // See https://go.microsoft.com/fwlink/?LinkId=733558
+    // for the documentation about the tasks.json format
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "build-debug",
+            "type": "shell",
+            "detail": "Debug build",
+            "command": "scons",
+            "windows": {
+                "args": [
+                    "platform=windows",
+                    "target=template_debug",
+                    "debug_symbols=yes",
+                    "optimize=debug"
+                ]
+            }
+        },
+        {
+            "label": "build-release",
+            "type": "shell",
+            "detail": "Release build",
+            "command": "scons",
+            "windows": {
+                "args": [
+                    "platform=windows",
+                    "target=template_release",
+                    "debug_symbols=no",
+                    "optimize=release"
+                ]
+            }
+        }
+    ]
+}

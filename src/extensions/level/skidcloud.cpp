@@ -7,7 +7,7 @@
 
 using namespace godot;
 
-constexpr char *SMOKE_FRAMES[] = {
+constexpr std::array SMOKE_FRAMES = {
     "Smoke1",
     "Smoke2"
 };
@@ -26,6 +26,7 @@ SkidCloud::SkidCloud(Level *level, Vector2 pos) : m_level(level), m_pos(pos) {
     m_pos.y += 20;
 
     set_process_priority(static_cast<int>(ProcessingPriority::SkidCloud));
+    set_z_index(static_cast<int>(ZIndex::SkidCloud));
 
     set_sprite_frames(ResourceLoader::get_singleton()->load("src/assets/particles/smoke.tres"));
     set_animation("default");

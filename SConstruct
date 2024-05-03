@@ -15,6 +15,9 @@ env = SConscript("godot-cpp/SConstruct")
 # tweak this if you want to use different folders, or more folders, to store your source code in.
 env.Append(CPPPATH=["src/extensions"])
 
+if env["platform"] == "windows":
+    env.Append(CXXFLAGS=["/std:c++latest"])
+
 library_names = [
     f"lib{d}"
     for d in os.listdir("src/extensions")

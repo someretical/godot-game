@@ -29,9 +29,9 @@ public:
 
 	void _process(double delta) override;
 	void _physics_process(double delta) override;
-	bool Player::check_collision(Vector2 pos) const;
-	void Player::process_x();
-	void Player::process_y();
+	bool check_collision(Vector2 pos) const;
+	void process_x();
+	void process_y();
 
 	void set_pos(const Vector2 pos);
 	Vector2 get_pos() const;

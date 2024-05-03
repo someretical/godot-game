@@ -2,6 +2,7 @@
 #define LEVEL_H
 
 #include <godot_cpp/classes/node2d.hpp>
+#include <godot_cpp/classes/input_event.hpp>
 #include <godot_cpp/classes/resource_preloader.hpp>
 #include <godot_cpp/classes/random_number_generator.hpp>
 #include <godot_cpp/classes/camera2d.hpp>
@@ -10,6 +11,7 @@
 namespace godot {
 
 class Player;
+class Brush;
 
 constexpr int ceil_div(int numerator, int denominator) {
     return (numerator + denominator - 1) / denominator;
@@ -27,6 +29,7 @@ constexpr int SCREEN_TILE_HEIGHT = ceil_div(CAMERA_HEIGHT, TILE_SIZE);
 constexpr int TILE_COUNT_X = SCREEN_TILE_WIDTH + 1;
 constexpr int TILE_COUNT_Y = SCREEN_TILE_HEIGHT + 1;
 
+/* Lower values are processed first */
 enum class PhysicsProcessingPriority {
 	Player = 10,
 	Collectibles = 20,
@@ -42,10 +45,23 @@ enum class ProcessingPriority {
 	Tiles = 40
 };
 
+/* Larger values are draw on top */
+enum class ZIndex {
+	EditorBrush = 60,
+	SkidCloud = 50,
+	Player = 40,
+	Mobs = 30,
+	Collectibles = 20,
+	Tiles = 10
+};
+
 struct MapData {
-	Vector2i dimensions;
-	Vector2i start_pos;
-	int **tile_data;
+	Vector2i m_dimensions;
+	Vector2 m_start_pos;
+	struct tile {
+		int m_tile_group;
+		int m_variant;
+	} **tile_data;
 };
 
 class Level : public Node2D {
@@ -58,12 +74,14 @@ public:
 	Level();
 	~Level();
 
+	void _input(const Ref<InputEvent> &event) override;
 	void _ready() override;
-	void _physics_process(double delta) override;
 
 	void update_camera();
 	void set_camera_pos(const Vector2 pos);
 	Vector2 get_camera_pos() const;
+
+	void handle_editor_input(const Ref<InputEvent> &event);
 
 	RandomNumberGenerator *m_rng;
 	ResourcePreloader *m_tile_preloader;
@@ -77,6 +95,10 @@ public:
 	Node *m_mobs_node;
 	Node *m_particles_node;
 	MapData m_curmap;
+	struct editor {
+		Brush *m_brush;
+		bool m_enabled;
+	} m_editor;
 };
 
 }

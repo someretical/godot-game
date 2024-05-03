@@ -1,0 +1,26 @@
+[gd_resource type="SpriteFrames" load_steps=5 format=3 uid="uid://37tnp17f1d3s"]
+
+[ext_resource type="Texture2D" uid="uid://b3lxkd0u6urh5" path="res://src/assets/tiles/question/Question1.png" id="1_y143f"]
+[ext_resource type="Texture2D" uid="uid://lbkoaxq6cftp" path="res://src/assets/tiles/question/Question2.png" id="2_xhr3p"]
+[ext_resource type="Texture2D" uid="uid://1qs611qraix7" path="res://src/assets/tiles/question/Question3.png" id="3_yrta5"]
+[ext_resource type="Texture2D" uid="uid://dn7vg3o2ybvxb" path="res://src/assets/tiles/question/Question4.png" id="4_71fvt"]
+
+[resource]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("1_y143f")
+}, {
+"duration": 1.0,
+"texture": ExtResource("2_xhr3p")
+}, {
+"duration": 1.0,
+"texture": ExtResource("3_yrta5")
+}, {
+"duration": 1.0,
+"texture": ExtResource("4_71fvt")
+}],
+"loop": true,
+"name": &"default",
+"speed": 6.0
+}]
