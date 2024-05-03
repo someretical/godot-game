@@ -4,9 +4,9 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "build-debug",
+            "label": "windows-build-debug",
             "type": "shell",
-            "detail": "Debug build",
+            "detail": "Windows debug build",
             "command": "scons",
             "windows": {
                 "args": [
@@ -23,9 +23,9 @@
             }
         },
         {
-            "label": "build-release",
+            "label": "windows-build-release",
             "type": "shell",
-            "detail": "Release build",
+            "detail": "Windows release build",
             "command": "scons",
             "windows": {
                 "args": [
@@ -37,7 +37,7 @@
             },
             "problemMatcher": [],
             "group": {
-                "kind": "build",
+                "kind": "build"
             }
         }
     ]
