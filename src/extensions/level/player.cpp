@@ -167,10 +167,7 @@ void Player::_process(double delta) {
 }
 
 bool Player::check_collision(Vector2 pos) const {
-    /* actual player spite size is 28x54 */
-    /* the player has a hitbox size of 16x50 about m_pos */
-    /* except the top half of the hitbox is 4px shorter*/
-    /* pos is centred in the player hitbox sprite which is 16x32 */
+    /* see hitbox notes at the top of this file */
     const auto &player_hitbox = Rect2(pos.x - HITBOX_LEFT_OFFSET, pos.y - HITBOX_TOP_OFFSET, HITBOX_WIDTH, HITBOX_HEIGHT);
 
     /* check that player is still within level */
