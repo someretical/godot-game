@@ -174,6 +174,15 @@ bool Player::check_collision(Vector2 pos) const {
     const auto &player_hitbox = Rect2(pos.x - HITBOX_LEFT_OFFSET, pos.y - HITBOX_TOP_OFFSET, HITBOX_WIDTH, HITBOX_HEIGHT);
 
     /* check that player is still within level */
+    /*
+    this is one place where we need to use the tiny constant:
+    if the player hitbox is perfectly aligned with the bottom edge of the level, the following check will return true
+    however, when we compute bottomright, as the bottom edge of the player's hitbox is the same as the bottom bound of the level, it is therefore divisible by TILE_SIZE because the level size is divisible by TILE_SIZE
+    this means there is no fractional part to truncate and therefore we end up with an array index that is out of bounds
+    you can test this out by setting tiny to 0f and then running the game and using the level editor to remove the ground and letting the player fall
+    the debugger will highlight the if condition inside the double for loop when we check the tile group and you will see that j is out of bounds
+    so by subtracting and adding TINY in certain places such as when computing the level bounds, we can ensure that checks dependent on truncation continue to work as expected
+    */
     if (!m_level->m_bounds.encloses(player_hitbox)) {
         return true;
     }
@@ -254,9 +263,9 @@ void Player::process_x() {
             the only way to fix this is to add an extra check but since collision checking is expensive, the cheap alternative is to just mention the constraint that the maximum velocity in a direction should be less than or equal to the minimum distance between the player's centre and the edge of the player's hitbox
             this affects both X and Y directions but extra care should be taken in the Y direction as the hitbox is usually not symmetrical
             */
-            m_pos.x = roundf(new_pos.x + (HALF_TILE + HITBOX_RIGHT_GAP) - fmodf(new_pos.x, TILE_SIZE));
+            m_pos.x = roundf(new_pos.x + (HALF_TILE + HITBOX_RIGHT_GAP) - fmodf(new_pos.x, TILE_SIZE)) - TINY;
         } else {
-            m_pos.x = roundf(new_pos.x + (HALF_TILE - HITBOX_LEFT_GAP) - fmodf(new_pos.x, TILE_SIZE));
+            m_pos.x = roundf(new_pos.x + (HALF_TILE - HITBOX_LEFT_GAP) - fmodf(new_pos.x, TILE_SIZE)) + TINY;
         }
 
         /* make the player fall straight down if they were in the middle of a jump and ran into something horizontally */
@@ -331,14 +340,14 @@ void Player::process_y() {
                 m_jump_time = 0;
             }
 
-            m_pos.y = roundf(new_pos.y + HITBOX_BOTTOM_GAP - fmodf(new_pos.y, TILE_SIZE));
+            m_pos.y = roundf(new_pos.y + HITBOX_BOTTOM_GAP - fmodf(new_pos.y, TILE_SIZE)) - TINY;
         } else {
             /* player has hit their head on the bottom side of a tile */
             /* increase jump time artificially so the player cannot "stick" to the bottom side of the side */
             m_jump_time = MAX_JUMP_TIME + 1;
 
             /* the 11 is the empty number of pixels between the top of the hitbox and the edge of the sprite */
-            m_pos.y = roundf(new_pos.y + (TILE_SIZE - HITBOX_TOP_GAP) - fmodf(new_pos.y, TILE_SIZE));
+            m_pos.y = roundf(new_pos.y + (TILE_SIZE - HITBOX_TOP_GAP) - fmodf(new_pos.y, TILE_SIZE)) + TINY;
         }
         m_vel.y = 0;
     } else {

@@ -78,7 +78,7 @@ Level::Level() {
     m_editor.m_brush = memnew(Brush(this));
     m_editor.m_enabled = false;
 
-    // Create in memory map
+    /* Create in memory map */ 
     m_curmap.m_dimensions = Vector2{100, 40};
     m_curmap.tile_data = memnew_arr(MapData::tile *, m_curmap.m_dimensions.y);
     const auto temp = memnew_arr(MapData::tile, m_curmap.m_dimensions.x * m_curmap.m_dimensions.y);
@@ -101,7 +101,12 @@ Level::Level() {
         }
     }
 
-    m_bounds = Rect2{0, 0, static_cast<float>(m_curmap.m_dimensions.x * TILE_SIZE), static_cast<float>(m_curmap.m_dimensions.y * TILE_SIZE)};
+    m_bounds = Rect2{
+        0 + TINY, 
+        0 + TINY, 
+        static_cast<float>(m_curmap.m_dimensions.x * TILE_SIZE) - (2 * TINY), 
+        static_cast<float>(m_curmap.m_dimensions.y * TILE_SIZE) - (2 * TINY)
+    };
 
     // Setup player
     m_player = memnew(Player(this, Vector2{CAMERA_WIDTH / 2, CAMERA_HEIGHT / 2}));
