@@ -5,10 +5,11 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "(Windows) Launch",
+            "name": "Windows debug",
             "type": "cppvsdbg",
             "request": "launch",
-            "preLaunchTask": "build-debug",
+            "preLaunchTask": "windows-build-debug",
+            // Using the console executable doesn't work for some reason
             "program": "E:\\Godot_v4.2.2-stable_win64.exe",
             "args": ["--path", "${workspaceFolder}", "--debug"],
             "stopAtEntry": false,
