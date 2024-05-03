@@ -32,7 +32,7 @@
                     "platform=windows",
                     "target=template_release",
                     "debug_symbols=no",
-                    "optimize=release"
+                    "optimize=speed"
                 ]
             },
             "problemMatcher": [],

@@ -21,18 +21,21 @@ public:
     void _unhandled_input(const Ref<InputEvent> &event);
     void _ready() override;
 	void _process(double delta) override;
+    void _physics_process(double delta) override;
 
-    void handle_next_tile_group(const Ref<InputEvent> &event);
-    void handle_next_tile_variant(const Ref<InputEvent> &event);
+    Vector2i get_grid_pos(const Vector2 pos) const;
+
+    bool handle_next_tile_group(const Ref<InputEvent> &event);
+    bool handle_next_tile_variant(const Ref<InputEvent> &event);
     void set_tile(const int tile);
     int get_tile() const;
     void set_variant(const int variant);
     int get_variant() const;
 
-    void handle_place_tile(const Ref<InputEvent> &event);
+    bool handle_pick_tile(const Ref<InputEvent> &event);
 
 	Level *m_level;
-    int m_tile;
+    int m_tile_group;
     int m_variant;
 };
 
