@@ -3,6 +3,7 @@
 #include "tile.h"
 #include "brush.h"
 #include "tile_data.h"
+#include "mapdata.h"
 
 #include <cmath>
 #include <godot_cpp/classes/scene_tree.hpp>
@@ -12,6 +13,12 @@
 #include <godot_cpp/classes/resource_loader.hpp>
 #include <godot_cpp/classes/input_event_key.hpp>
 #include <godot_cpp/classes/engine.hpp>
+#include <godot_cpp/classes/json.hpp>
+#include <godot_cpp/classes/file_access.hpp>
+#include <godot_cpp/variant/dictionary.hpp>
+#include <godot_cpp/variant/array.hpp>
+#include <godot_cpp/variant/string.hpp>
+#include <godot_cpp/variant/variant.hpp>
 
 using namespace godot;
 
@@ -33,6 +40,7 @@ Level::Level() {
     const auto loader = ResourceLoader::get_singleton();
 
     m_tile_preloader = memnew(ResourcePreloader);
+    m_tile_preloader->set_name("Tile Preloader");
     m_tile_preloader->add_resource("Blue-1", loader->load("src/assets/tiles/blue/Blue-1.png"));
     m_tile_preloader->add_resource("Blue-2", loader->load("src/assets/tiles/blue/Blue-2.png"));
     m_tile_preloader->add_resource("Blue-3", loader->load("src/assets/tiles/blue/Blue-3.png"));
@@ -61,35 +69,35 @@ Level::Level() {
     add_child(m_tile_preloader);
 
     m_map_node = memnew(Node);
+    m_map_node->set_name("Map");
     add_child(m_map_node);
 
     m_tiles_node = memnew(Node);
+    m_tiles_node->set_name("Tiles");
     m_map_node->add_child(m_tiles_node);
 
     m_collectables_node = memnew(Node);
+    m_collectables_node->set_name("Collectables");
     m_map_node->add_child(m_collectables_node);
 
     m_mobs_node = memnew(Node);
+    m_mobs_node->set_name("Mobs");
     m_map_node->add_child(m_mobs_node);
 
     m_particles_node = memnew(Node);
+    m_particles_node->set_name("Particles");
     m_map_node->add_child(m_particles_node);
 
     m_editor.m_brush = memnew(Brush(this));
+    m_editor.m_brush->set_name("Brush");
     m_editor.m_enabled = false;
 
-    /* Create in memory map */ 
-    m_curmap.m_dimensions = Vector2{100, 40};
-    m_curmap.tile_data = memnew_arr(MapData::tile *, m_curmap.m_dimensions.y);
-    const auto temp = memnew_arr(MapData::tile, m_curmap.m_dimensions.x * m_curmap.m_dimensions.y);
-    memset(temp, -1, m_curmap.m_dimensions.x * m_curmap.m_dimensions.y * sizeof(MapData::tile));
-    for (int j = 0; j < m_curmap.m_dimensions.y; j++) {
-        m_curmap.tile_data[j] = temp + j * m_curmap.m_dimensions.x;
-    }
-
-    for (int j = 0; j < m_curmap.m_dimensions.x; j++) {
-        m_curmap.tile_data[m_curmap.m_dimensions.y - 1][j].m_tile_group = 1;
-        m_curmap.tile_data[m_curmap.m_dimensions.y - 1][j].m_variant = 4;
+    if (auto map = MapData::load_bare_map(); map.has_value()) {
+        /* interesting fuckery because unique_ptr members are normally supposed to be initialized in the initializer list */
+        m_curmap.reset(std::move(map.value().release()));
+    } else {
+        UtilityFunctions::print("Failed to load map");
+        std::exit(1);
     }
 
     int i = 0;
@@ -104,15 +112,15 @@ Level::Level() {
     m_bounds = Rect2{
         0 + TINY, 
         0 + TINY, 
-        static_cast<float>(m_curmap.m_dimensions.x * TILE_SIZE) - (2 * TINY), 
-        static_cast<float>(m_curmap.m_dimensions.y * TILE_SIZE) - (2 * TINY)
+        static_cast<float>(m_curmap->m_dimensions.x * TILE_SIZE) - (2 * TINY), 
+        static_cast<float>(m_curmap->m_dimensions.y * TILE_SIZE) - (2 * TINY)
     };
 
-    // Setup player
+    /* Setup player */
     m_player = memnew(Player(this, Vector2{CAMERA_WIDTH / 2, CAMERA_HEIGHT / 2}));
     m_mobs_node->add_child(m_player);
 
-    // Setup camera
+    /* Setup camera */
     m_camera = memnew(Camera2D);
     m_camera->set_zoom(Vector2(SCREEN_ZOOM, SCREEN_ZOOM));
     add_child(m_camera);
@@ -121,8 +129,6 @@ Level::Level() {
 
 Level::~Level() {
     memdelete(m_rng);
-    memdelete_arr(m_curmap.tile_data[0]);
-    memdelete_arr(m_curmap.tile_data);
     queue_free();
 }
 
@@ -142,16 +148,30 @@ void Level::update_camera() {
 
     if (m_camera_pos.x < CAMERA_WIDTH / 2) {
         m_camera_pos.x = CAMERA_WIDTH / 2;
-    } else if (m_camera_pos.x > m_curmap.m_dimensions.x * TILE_SIZE - CAMERA_WIDTH / 2) {
-        m_camera_pos.x = m_curmap.m_dimensions.x * TILE_SIZE - CAMERA_WIDTH / 2;
+    } else if (m_camera_pos.x > m_curmap->m_dimensions.x * TILE_SIZE - CAMERA_WIDTH / 2) {
+        m_camera_pos.x = m_curmap->m_dimensions.x * TILE_SIZE - CAMERA_WIDTH / 2;
     }
 
     if (m_camera_pos.y < CAMERA_HEIGHT / 2) {
         m_camera_pos.y = CAMERA_HEIGHT / 2;
-    } else if (m_camera_pos.y > m_curmap.m_dimensions.y * TILE_SIZE - CAMERA_HEIGHT / 2) {
-        m_camera_pos.y = m_curmap.m_dimensions.y * TILE_SIZE - CAMERA_HEIGHT / 2;
+    } else if (m_camera_pos.y > m_curmap->m_dimensions.y * TILE_SIZE - CAMERA_HEIGHT / 2) {
+        m_camera_pos.y = m_curmap->m_dimensions.y * TILE_SIZE - CAMERA_HEIGHT / 2;
     }
 }
+
+Error Level::import_map_inplace(const String &path) {
+    if (auto map = MapData::load_map(path); map.has_value()) {
+        m_curmap.reset(std::move(map.value().release()));
+        return OK;
+    } else {
+        return map.error();
+    }
+}
+
+Error Level::export_current_map(const String &path) {
+    return m_curmap->save_map(path);
+}
+
 
 void Level::_input(const Ref<InputEvent> &event) {
     handle_editor_input(event);

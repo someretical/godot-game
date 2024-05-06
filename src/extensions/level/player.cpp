@@ -192,7 +192,7 @@ bool Player::check_collision(Vector2 pos) const {
     for (int i = topleft.x; i <= bottomright.x; i++) {
         for (int j = topleft.y; j <= bottomright.y; j++) {
             /* assume that all blocks have a hitbox that is 16x16 */
-            if (m_level->m_curmap.tile_data[j][i].m_tile_group != -1) {
+            if (m_level->m_curmap->m_tile_data[j][i].m_tile_group != -1) {
                 const auto tile_hitbox = Rect2i(i * TILE_SIZE, j * TILE_SIZE, TILE_SIZE, TILE_SIZE);
 
                 if (player_hitbox.intersects(tile_hitbox)) {

@@ -24,14 +24,14 @@ Tile::~Tile() {
 void Tile::_process(double delta) {
     if (
         m_tile_index.x < 0 || m_tile_index.y < 0 || 
-        m_tile_index.x >= m_level->m_curmap.m_dimensions.x || 
-        m_tile_index.y >= m_level->m_curmap.m_dimensions.y
+        m_tile_index.x >= m_level->m_curmap->m_dimensions.x || 
+        m_tile_index.y >= m_level->m_curmap->m_dimensions.y
     ) {
         set_visible(false);
         return;
     }
 
-    const auto data = m_level->m_curmap.tile_data[m_tile_index.y][m_tile_index.x];
+    const auto data = m_level->m_curmap->m_tile_data[m_tile_index.y][m_tile_index.x];
 
     if (data.m_tile_group == -1 || data.m_variant == -1) {
         set_visible(false);

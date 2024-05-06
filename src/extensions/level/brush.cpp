@@ -10,6 +10,7 @@
 #include <godot_cpp/classes/input_event_mouse_button.hpp>
 #include <godot_cpp/classes/input.hpp>
 #include <godot_cpp/classes/scene_tree.hpp>
+#include <godot_cpp/classes/display_server.hpp>
 
 using namespace godot;
 
@@ -21,6 +22,9 @@ void Brush::_bind_methods() {
     ClassDB::bind_method(D_METHOD("get_variant"), &Brush::get_variant);
 	ClassDB::bind_method(D_METHOD("set_variant", "pos"), &Brush::set_variant);
     ClassDB::add_property("Brush", PropertyInfo(Variant::INT, "m_variant"), "set_variant", "get_variant");
+
+    ClassDB::bind_method(D_METHOD("handle_export_callback"), &Brush::handle_export_callback);
+    ClassDB::bind_method(D_METHOD("handle_import_callback"), &Brush::handle_import_callback);
 }
 
 Brush::Brush() {
@@ -62,7 +66,7 @@ void Brush::_physics_process(double delta) {
             return;
         }
 
-        auto &existing = m_level->m_curmap.tile_data[grid_pos.y][grid_pos.x];
+        auto &existing = m_level->m_curmap->m_tile_data[grid_pos.y][grid_pos.x];
         const auto max_size = TileData::get_variant_sizes()[m_tile_group];
         const auto variant_index = m_variant >= max_size ? max_size - 1 : m_variant;
 
@@ -74,7 +78,7 @@ void Brush::_physics_process(double delta) {
             return;
         }
 
-        auto &existing = m_level->m_curmap.tile_data[grid_pos.y][grid_pos.x];
+        auto &existing = m_level->m_curmap->m_tile_data[grid_pos.y][grid_pos.x];
         existing.m_tile_group = -1;
         existing.m_variant = -1;
     }
@@ -88,8 +92,8 @@ Vector2i Brush::get_grid_pos(const Vector2 pos) const {
 
     if (
         grid_pos.x < 0 || grid_pos.y < 0 || 
-        grid_pos.x >= m_level->m_curmap.m_dimensions.x || 
-        grid_pos.y >= m_level->m_curmap.m_dimensions.y
+        grid_pos.x >= m_level->m_curmap->m_dimensions.x || 
+        grid_pos.y >= m_level->m_curmap->m_dimensions.y
     ) {
         return Vector2i(-1, -1);
     }
@@ -97,8 +101,9 @@ Vector2i Brush::get_grid_pos(const Vector2 pos) const {
     return grid_pos;
 };
 
-
 void Brush::_unhandled_input(const Ref<InputEvent> &event) {
+    if (handle_export_level(event)) return;
+    if (handle_import_level(event)) return;
     if (handle_next_tile_variant(event)) return;
     if (handle_next_tile_group(event)) return;
     if (handle_pick_tile(event)) return;
@@ -187,7 +192,7 @@ bool Brush::handle_pick_tile(const Ref<InputEvent> &event) {
             return true;
         }
 
-        auto &existing = m_level->m_curmap.tile_data[grid_pos.y][grid_pos.x];
+        auto &existing = m_level->m_curmap->m_tile_data[grid_pos.y][grid_pos.x];
         if (existing.m_tile_group == -1 || existing.m_variant == -1) {
             return true;
         }
@@ -207,6 +212,87 @@ bool Brush::handle_pick_tile(const Ref<InputEvent> &event) {
     }
 
     return false;
+}
+
+bool Brush::handle_export_level(const Ref<InputEvent> &event) {
+    const auto key_event = Object::cast_to<const InputEventKey>(*event);
+    if (!key_event) {
+        return false;
+    }
+
+    const auto input = Input::get_singleton();
+
+    if (key_event->is_pressed() && key_event->get_keycode() == KEY_S && input->is_key_pressed(KEY_CTRL)) {
+        if (input->is_key_pressed(KEY_SHIFT) || m_level->m_curmap->m_path.is_empty()) {
+            const auto error = DisplayServer::get_singleton()->file_dialog_show(
+                "Save Level", 
+                ".", 
+                "level.json", 
+                true, 
+                DisplayServer::FileDialogMode::FILE_DIALOG_MODE_SAVE_FILE, 
+                PackedStringArray{"*.json"}, 
+                Callable(this, "handle_export_callback")
+            );
+
+            if (error != Error::OK) {
+                UtilityFunctions::print("file_dialog_show error: ", error);
+            }
+        } else {
+            m_level->export_current_map(m_level->m_curmap->m_path);
+        }
+
+        get_viewport()->set_input_as_handled();
+        return true;
+    }
+
+    return false;
+}
+
+void Brush::handle_export_callback(bool status, PackedStringArray paths, int selected_filter_index) {
+    if (!status) {
+        return;
+    }
+
+    m_level->export_current_map(paths[0]);
+}
+
+bool Brush::handle_import_level(const Ref<InputEvent> &event) {
+    const auto key_event = Object::cast_to<const InputEventKey>(*event);
+    if (!key_event) {
+        return false;
+    }
+
+    if (key_event->is_pressed() && key_event->get_keycode() == KEY_O && Input::get_singleton()->is_key_pressed(KEY_CTRL)) {
+        const auto error = DisplayServer::get_singleton()->file_dialog_show(
+            "Import Level", 
+            ".", 
+            "", 
+            true, 
+            DisplayServer::FileDialogMode::FILE_DIALOG_MODE_OPEN_FILE, 
+            PackedStringArray{"*.json"}, 
+            Callable(this, "handle_import_callback")
+        );
+
+        if (error != Error::OK) {
+            UtilityFunctions::print("file_dialog_show error: ", error);
+        }
+
+        get_viewport()->set_input_as_handled();
+        return true;
+    }
+
+    return false;
+}
+
+void Brush::handle_import_callback(bool status, PackedStringArray paths, int selected_filter_index) {
+    if (!status) {
+        return;
+    }
+
+    const auto err = m_level->import_map_inplace(paths[0]);
+    if (err != Error::OK) {
+        UtilityFunctions::print("import_map_inplace error: ", err);
+    }
 }
 
 void Brush::set_tile(const int tile) {

@@ -1,6 +1,8 @@
 #ifndef LEVEL_H
 #define LEVEL_H
 
+#include "mapdata.h"
+
 #include <godot_cpp/classes/node2d.hpp>
 #include <godot_cpp/classes/input_event.hpp>
 #include <godot_cpp/classes/resource_preloader.hpp>
@@ -56,15 +58,6 @@ enum class ZIndex {
 	Tiles = 10
 };
 
-struct MapData {
-	Vector2i m_dimensions;
-	Vector2 m_start_pos;
-	struct tile {
-		int m_tile_group;
-		int m_variant;
-	} **tile_data;
-};
-
 class Level : public Node2D {
 	GDCLASS(Level, Node2D)
 
@@ -83,9 +76,12 @@ public:
 	Vector2 get_camera_pos() const;
 
 	void handle_editor_input(const Ref<InputEvent> &event);
+	Error import_map_inplace(const String &path);
+	Error export_current_map(const String &path);
 
 	RandomNumberGenerator *m_rng;
 	ResourcePreloader *m_tile_preloader;
+	std::unique_ptr<MapData> m_curmap;
 	Vector2 m_camera_pos;
 	Player *m_player;
 	Camera2D *m_camera;
@@ -95,7 +91,6 @@ public:
 	Node *m_collectables_node;
 	Node *m_mobs_node;
 	Node *m_particles_node;
-	MapData m_curmap;
 	struct editor {
 		Brush *m_brush;
 		bool m_enabled;

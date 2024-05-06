@@ -33,6 +33,10 @@ public:
     int get_variant() const;
 
     bool handle_pick_tile(const Ref<InputEvent> &event);
+    bool handle_export_level(const Ref<InputEvent> &event);
+    void handle_export_callback(bool status, PackedStringArray paths, int selected_filter_index);
+    bool handle_import_level(const Ref<InputEvent> &event);
+    void handle_import_callback(bool status, PackedStringArray paths, int selected_filter_index);
 
 	Level *m_level;
     int m_tile_group;
