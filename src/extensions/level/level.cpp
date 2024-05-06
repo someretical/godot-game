@@ -4,6 +4,7 @@
 #include "brush.h"
 #include "tile_data.h"
 #include "mapdata.h"
+#include "console.h"
 
 #include <cmath>
 #include <godot_cpp/classes/scene_tree.hpp>
@@ -67,6 +68,10 @@ Level::Level() {
     m_tile_preloader->add_resource("Question3", loader->load("src/assets/tiles/question/Question3.png"));
     m_tile_preloader->add_resource("Question4", loader->load("src/assets/tiles/question/Question4.png"));
     add_child(m_tile_preloader);
+
+    m_console = memnew(Console(this));
+    m_console->set_name("Console");
+    add_child(m_console);
 
     m_map_node = memnew(Node);
     m_map_node->set_name("Map");

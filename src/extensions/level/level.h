@@ -14,6 +14,7 @@ namespace godot {
 
 class Player;
 class Brush;
+class Console;
 
 constexpr int ceil_div(int numerator, int denominator) {
     return (numerator + denominator - 1) / denominator;
@@ -83,6 +84,7 @@ public:
 	ResourcePreloader *m_tile_preloader;
 	std::unique_ptr<MapData> m_curmap;
 	Vector2 m_camera_pos;
+	Console *m_console;
 	Player *m_player;
 	Camera2D *m_camera;
 	Rect2 m_bounds;

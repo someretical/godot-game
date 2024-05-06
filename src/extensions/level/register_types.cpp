@@ -5,6 +5,7 @@
 #include "player.h"
 #include "skidcloud.h"
 #include "brush.h"
+#include "console.h"
 
 #include <gdextension_interface.h>
 #include <godot_cpp/core/defs.hpp>
@@ -22,6 +23,7 @@ void initialize_liblevel(ModuleInitializationLevel p_level) {
     ClassDB::register_class<Player>();
     ClassDB::register_class<SkidCloud>();
     ClassDB::register_class<Brush>();
+    ClassDB::register_class<Console>();
 }
 
 void uninitialize_liblevel(ModuleInitializationLevel p_level) {
