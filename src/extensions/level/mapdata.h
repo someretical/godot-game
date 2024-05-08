@@ -23,12 +23,13 @@ public:
 	Vector2i m_dimensions;
 	Vector2 m_start_pos;
 
-    static std::expected<std::unique_ptr<MapData>, Error> load_bare_map();
-    static std::expected<std::unique_ptr<MapData>, Error> load_map(const String &path);
+	static void copy_tile_data(const std::shared_ptr<MapData> &src, const std::shared_ptr<MapData> &dst, const Vector2i &offset);
+    static std::expected<std::shared_ptr<MapData>, Error> load_bare_map(const Vector2i &dimensions);
+    static std::expected<std::shared_ptr<MapData>, Error> load_map(const String &path);
     Error save_map(const String &path);
 
 private:
-	static std::expected<std::unique_ptr<MapData>, Error> load_map_v1(const String &path, const Dictionary &dict);
+	static std::expected<std::shared_ptr<MapData>, Error> load_map_v1(const String &path, const Dictionary &dict);
 };
 
 #endif

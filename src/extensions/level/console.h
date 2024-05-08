@@ -24,6 +24,8 @@ public:
 
 	void handle_command(const String new_text);
 
+	bool handle_expand_command(const PackedStringArray &args);
+
 	Level *m_level;
     RichTextLabel *m_rich_text_label;
     LineEdit *m_line_edit;

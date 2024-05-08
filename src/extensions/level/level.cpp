@@ -137,9 +137,14 @@ Level::Level() {
     m_game_layer->add_child(m_editor.m_brush);
     m_editor.m_enabled = false;
 
-    if (auto map = MapData::load_bare_map(); map.has_value()) {
-        /* interesting fuckery because unique_ptr members are normally supposed to be initialized in the initializer list */
-        m_curmap.reset(std::move(map.value().release()));
+    if (auto map = MapData::load_bare_map(Vector2i{100, 40}); map.has_value()) {
+        m_curmap = map.value();
+        m_bounds = Rect2{
+            0 + TINY, 
+            0 + TINY, 
+            static_cast<float>(m_curmap->m_dimensions.x * TILE_SIZE) - (2 * TINY), 
+            static_cast<float>(m_curmap->m_dimensions.y * TILE_SIZE) - (2 * TINY)
+        };
     } else {
         UtilityFunctions::print("Failed to load map");
         std::exit(1);
@@ -207,7 +212,13 @@ void Level::update_camera() {
 
 Error Level::import_map_inplace(const String &path) {
     if (auto map = MapData::load_map(path); map.has_value()) {
-        m_curmap.reset(std::move(map.value().release()));
+        m_curmap = map.value();
+        m_bounds = Rect2{
+            0 + TINY, 
+            0 + TINY, 
+            static_cast<float>(m_curmap->m_dimensions.x * TILE_SIZE) - (2 * TINY), 
+            static_cast<float>(m_curmap->m_dimensions.y * TILE_SIZE) - (2 * TINY)
+        };
         return OK;
     } else {
         return map.error();

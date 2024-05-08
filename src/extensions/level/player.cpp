@@ -23,6 +23,7 @@ constexpr float MAX_SPEED_X = 3.3;
 constexpr float X_ACCEL = 0.1;
 constexpr float X_DECEL = 0.95;
 constexpr float X_CHANGE_DIR_ACCEL = 0.2;
+constexpr float MAX_GOD_SPEED = 8;
 constexpr int SMOKE_PARTICLE_DELAY = 7;
 
 /*
@@ -213,6 +214,11 @@ void Player::process_x() {
 
     m_direction = right_pressed - left_pressed;
 
+    if (m_level->m_editor.m_enabled) {
+        m_true_pos.x += m_direction * MAX_GOD_SPEED;
+        return;
+    }
+
     /*
     in most games, it's fine to handle acceleration and deceleration the same way
     however, in mario games, the player accelerates slower than usual
@@ -281,6 +287,15 @@ void Player::process_x() {
 }
 
 void Player::process_y() {
+    bool up_pressed = Input::get_singleton()->is_action_pressed("ui_up");
+    bool down_pressed = Input::get_singleton()->is_action_pressed("ui_down");
+    
+    int direction = down_pressed - up_pressed;
+    if (m_level->m_editor.m_enabled) {
+        m_true_pos.y += direction * MAX_GOD_SPEED;
+        return;
+    }
+
     m_fall_time++;
 
     /* simulate gravity */
@@ -288,9 +303,6 @@ void Player::process_y() {
     if (m_vel.y > MAX_FALL_SPEED) {
         m_vel.y = MAX_FALL_SPEED;
     }
-
-    bool up_pressed = Input::get_singleton()->is_action_pressed("ui_up");
-    bool down_pressed = Input::get_singleton()->is_action_pressed("ui_down");
 
     /*
     Jumping notes:

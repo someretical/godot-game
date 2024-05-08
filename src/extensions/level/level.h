@@ -87,7 +87,7 @@ public:
 
 	RandomNumberGenerator *m_rng;
 	ResourcePreloader *m_tile_preloader;
-	std::unique_ptr<MapData> m_curmap;
+	std::shared_ptr<MapData> m_curmap;
 	Vector2 m_camera_true_pos;
 	CanvasLayer *m_hud_layer;
 	CanvasLayer *m_game_layer;

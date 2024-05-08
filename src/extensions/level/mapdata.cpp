@@ -20,8 +20,18 @@ MapData::~MapData() {
     delete[] m_tile_data;
 }
 
-std::expected<std::unique_ptr<MapData>, Error> MapData::load_bare_map() {
-    const Vector2i dimensions{100, 40};
+void MapData::copy_tile_data(const std::shared_ptr<MapData> &src, const std::shared_ptr<MapData> &dst, const Vector2i &offset) {
+    const Vector2i start_inc{offset.x, offset.y};
+    const Vector2i end_excl{offset.x + src->m_dimensions.x, offset.y + src->m_dimensions.y};
+
+    for (int j = start_inc.y; j < end_excl.y; j++) {
+        for (int i = start_inc.x; i < end_excl.x; i++) {
+            dst->m_tile_data[j][i] = src->m_tile_data[j - offset.y][i - offset.x];
+        }
+    }
+}
+
+std::expected<std::shared_ptr<MapData>, Error> MapData::load_bare_map(const Vector2i &dimensions) {
     const auto tile_data = new MapData::tile *[dimensions.y];
     if (!tile_data) return std::unexpected(FAILED);
     memset(tile_data, 0, dimensions.y * sizeof(MapData::tile *));
@@ -37,15 +47,10 @@ std::expected<std::unique_ptr<MapData>, Error> MapData::load_bare_map() {
         tile_data[j] = temp + j * dimensions.x;
     }
 
-    for (int j = 0; j < dimensions.x; j++) {
-        tile_data[dimensions.y - 1][j].m_tile_group = 1;
-        tile_data[dimensions.y - 1][j].m_variant = 4;
-    }
-
-    return std::make_unique<MapData>("", dimensions, Vector2{0, 0}, tile_data);
+    return std::make_shared<MapData>("", dimensions, Vector2{0, 0}, tile_data);
 }
 
-std::expected<std::unique_ptr<MapData>, Error> MapData::load_map_v1(const String &path, const Dictionary &dict) {
+std::expected<std::shared_ptr<MapData>, Error> MapData::load_map_v1(const String &path, const Dictionary &dict) {
     /* validate file contents */
     const auto var = dict.get("dimensions", Array{});
     if (var.get_type() != Variant::Type::ARRAY) return std::unexpected(FAILED);
@@ -147,10 +152,10 @@ std::expected<std::unique_ptr<MapData>, Error> MapData::load_map_v1(const String
         }
     }
 
-    return std::make_unique<MapData>(path, dimensions, start_pos, tile_data);
+    return std::make_shared<MapData>(path, dimensions, start_pos, tile_data);
 }
 
-std::expected<std::unique_ptr<MapData>, Error> MapData::load_map(const String &path) {
+std::expected<std::shared_ptr<MapData>, Error> MapData::load_map(const String &path) {
     const auto file = FileAccess::open(path, FileAccess::READ);
     const auto err = FileAccess::get_open_error();
     if (err != OK) return std::unexpected(err);
