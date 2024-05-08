@@ -113,90 +113,68 @@ void Brush::_unhandled_input(const Ref<InputEvent> &event) {
 }
 
 bool Brush::handle_next_tile_group(const Ref<InputEvent> &event) {
-    const auto key_event = Object::cast_to<const InputEventMouseButton>(*event);
-    if (!key_event) {
-        return false;
-    }
-
-    if (key_event->is_pressed()) {
-        if (key_event->get_button_index() == MouseButton::MOUSE_BUTTON_WHEEL_DOWN) {
-            m_tile_group++;
-            if (m_tile_group >= TileData::get_variant_sizes().size()) {
-                m_tile_group = 0;
-            }
-
-            const auto max_size = TileData::get_variant_sizes()[m_tile_group];
-            const auto variant_index = m_variant >= max_size ? max_size - 1 : m_variant;
-            set_texture(m_level->m_tile_preloader->get_resource(TileData::get_tile_variants()[m_tile_group][variant_index].data()));
-            get_viewport()->set_input_as_handled();
-            return true;
-        } else if (key_event->get_button_index() == MouseButton::MOUSE_BUTTON_WHEEL_UP) {
-            m_tile_group--;
-            if (m_tile_group < 0) {
-                m_tile_group = TileData::get_variant_sizes().size() - 1;
-            }
-
-            const auto max_size = TileData::get_variant_sizes()[m_tile_group];
-            const auto variant_index = m_variant >= max_size ? max_size - 1 : m_variant;
-            set_texture(m_level->m_tile_preloader->get_resource(TileData::get_tile_variants()[m_tile_group][variant_index].data()));
-            get_viewport()->set_input_as_handled();
-            return true;
+    if (event->is_action_pressed("ui_editor_next_tile_group")) {
+        m_tile_group++;
+        if (m_tile_group >= TileData::get_variant_sizes().size()) {
+            m_tile_group = 0;
         }
+
+        const auto max_size = TileData::get_variant_sizes()[m_tile_group];
+        const auto variant_index = m_variant >= max_size ? max_size - 1 : m_variant;
+        set_texture(m_level->m_tile_preloader->get_resource(TileData::get_tile_variants()[m_tile_group][variant_index].data()));
+        get_viewport()->set_input_as_handled();
+        return true;
+    } else if (event->is_action_pressed("ui_editor_prev_tile_group")) {
+        m_tile_group--;
+        if (m_tile_group < 0) {
+            m_tile_group = TileData::get_variant_sizes().size() - 1;
+        }
+
+        const auto max_size = TileData::get_variant_sizes()[m_tile_group];
+        const auto variant_index = m_variant >= max_size ? max_size - 1 : m_variant;
+        set_texture(m_level->m_tile_preloader->get_resource(TileData::get_tile_variants()[m_tile_group][variant_index].data()));
+        get_viewport()->set_input_as_handled();
+        return true;
     }
 
     return false;
 }
 
 bool Brush::handle_next_tile_variant(const Ref<InputEvent> &event) {
-    const auto key_event = Object::cast_to<const InputEventMouseButton>(*event);
-    if (!key_event) {
-        return false;
-    }
-
-    if (key_event->is_pressed() && Input::get_singleton()->is_key_pressed(KEY_SHIFT)) {
-        if (key_event->get_button_index() == MouseButton::MOUSE_BUTTON_WHEEL_DOWN) {
-            m_variant++;
-            if (m_variant >= TileData::get_variant_sizes()[m_tile_group]) {
-                m_variant = 0;
-            }
-
-            set_texture(m_level->m_tile_preloader->get_resource(TileData::get_tile_variants()[m_tile_group][m_variant].data()));
-            get_viewport()->set_input_as_handled();
-            return true;
-        } else if (key_event->get_button_index() == MouseButton::MOUSE_BUTTON_WHEEL_UP) {
-            m_variant--;
-            if (m_variant < 0) {
-                m_variant = TileData::get_variant_sizes()[m_tile_group] - 1;
-            }
-
-            set_texture(m_level->m_tile_preloader->get_resource(TileData::get_tile_variants()[m_tile_group][m_variant].data()));
-            get_viewport()->set_input_as_handled();
-            return true;
+    if (event->is_action_pressed("ui_editor_next_tile_variant")) {
+        m_variant++;
+        if (m_variant >= TileData::get_variant_sizes()[m_tile_group]) {
+            m_variant = 0;
         }
+
+        set_texture(m_level->m_tile_preloader->get_resource(TileData::get_tile_variants()[m_tile_group][m_variant].data()));
+        get_viewport()->set_input_as_handled();
+        return true;
+    } else if (event->is_action_pressed("ui_editor_prev_tile_variant")) {
+        m_variant--;
+        if (m_variant < 0) {
+            m_variant = TileData::get_variant_sizes()[m_tile_group] - 1;
+        }
+
+        set_texture(m_level->m_tile_preloader->get_resource(TileData::get_tile_variants()[m_tile_group][m_variant].data()));
+        get_viewport()->set_input_as_handled();
+        return true;
     }
 
     return false;
 }
 
 bool Brush::handle_pick_tile(const Ref<InputEvent> &event) {
-    const auto mouse_event = Object::cast_to<const InputEventMouseButton>(*event);
-    if (!mouse_event) {
-        return false;
-    }
-
-    static auto ignore_next_m3_press = false;
-    static auto ignore_next_m3_release = false;
-    if (mouse_event->is_pressed() && mouse_event->get_button_index() == MouseButton::MOUSE_BUTTON_MIDDLE && !ignore_next_m3_press) {
-        ignore_next_m3_press = true;
-        ignore_next_m3_release = false;
-
+    if (event->is_action_pressed("ui_editor_pick_tile")) {
         const auto grid_pos = get_grid_pos(get_viewport()->get_mouse_position());
         if (grid_pos.x == -1 || grid_pos.y == -1) {
+            get_viewport()->set_input_as_handled();
             return true;
         }
 
         auto &existing = m_level->m_curmap->m_tile_data[grid_pos.y][grid_pos.x];
         if (existing.m_tile_group == -1 || existing.m_variant == -1) {
+            get_viewport()->set_input_as_handled();
             return true;
         }
 
@@ -207,41 +185,32 @@ bool Brush::handle_pick_tile(const Ref<InputEvent> &event) {
         return true;
     }
 
-    if (mouse_event->is_released() && mouse_event->get_button_index() == MouseButton::MOUSE_BUTTON_MIDDLE && !ignore_next_m3_release) {
-        ignore_next_m3_press = false;
-        ignore_next_m3_release = true;
-        get_viewport()->set_input_as_handled();
-        return true;
-    }
-
     return false;
 }
 
 bool Brush::handle_export_level(const Ref<InputEvent> &event) {
-    const auto key_event = Object::cast_to<const InputEventKey>(*event);
-    if (!key_event) {
-        return false;
-    }
+    if (event->is_action_pressed("ui_editor_export_level")) {
+        if (m_level->m_curmap->m_path.is_empty()) {
+            goto save_as_anyway;
+        }
 
-    const auto input = Input::get_singleton();
+        m_level->export_current_map(m_level->m_curmap->m_path);
+        get_viewport()->set_input_as_handled();
+        return true;
+    } else if (event->is_action_pressed("ui_editor_export_level_as")) {
+save_as_anyway:
+        const auto error = DisplayServer::get_singleton()->file_dialog_show(
+            "Save Level", 
+            ".", 
+            "level.json", 
+            true, 
+            DisplayServer::FileDialogMode::FILE_DIALOG_MODE_SAVE_FILE, 
+            PackedStringArray{"*.json"}, 
+            Callable(this, "handle_export_callback")
+        );
 
-    if (key_event->is_pressed() && key_event->get_keycode() == KEY_S && input->is_key_pressed(KEY_CTRL)) {
-        if (input->is_key_pressed(KEY_SHIFT) || m_level->m_curmap->m_path.is_empty()) {
-            const auto error = DisplayServer::get_singleton()->file_dialog_show(
-                "Save Level", 
-                ".", 
-                "level.json", 
-                true, 
-                DisplayServer::FileDialogMode::FILE_DIALOG_MODE_SAVE_FILE, 
-                PackedStringArray{"*.json"}, 
-                Callable(this, "handle_export_callback")
-            );
-
-            if (error != Error::OK) {
-                UtilityFunctions::print("file_dialog_show error: ", error);
-            }
-        } else {
-            m_level->export_current_map(m_level->m_curmap->m_path);
+        if (error != Error::OK) {
+            UtilityFunctions::print("file_dialog_show error: ", error);
         }
 
         get_viewport()->set_input_as_handled();
@@ -260,12 +229,7 @@ void Brush::handle_export_callback(bool status, PackedStringArray paths, int sel
 }
 
 bool Brush::handle_import_level(const Ref<InputEvent> &event) {
-    const auto key_event = Object::cast_to<const InputEventKey>(*event);
-    if (!key_event) {
-        return false;
-    }
-
-    if (key_event->is_pressed() && key_event->get_keycode() == KEY_O && Input::get_singleton()->is_key_pressed(KEY_CTRL)) {
+    if (event->is_action_pressed("ui_editor_import_level")) {
         const auto error = DisplayServer::get_singleton()->file_dialog_show(
             "Import Level", 
             ".", 

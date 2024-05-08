@@ -22,6 +22,8 @@ public:
 
     void _input(const Ref<InputEvent> &event) override;
 
+	void handle_command(const String new_text);
+
 	Level *m_level;
     RichTextLabel *m_rich_text_label;
     LineEdit *m_line_edit;

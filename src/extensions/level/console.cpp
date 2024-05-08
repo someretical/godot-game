@@ -12,6 +12,7 @@
 using namespace godot;
 
 void Console::_bind_methods() {
+    ClassDB::bind_method(D_METHOD("handle_command"), &Console::handle_command);
 }
 
 Console::Console() {
@@ -71,12 +72,19 @@ Console::Console(Level *level) : m_level(level) {
     }
     m_line_edit->set_name("Console prompt line edit");
     m_line_edit->set_placeholder("Enter command...");
+    m_line_edit->connect("text_submitted", Callable(this, "handle_command"));
     v_box_container->add_child(m_line_edit);
 
     set_visible(false);
 }
 
 Console::~Console() {
+}
+
+void Console::handle_command(const String new_text) {
+    m_line_edit->set_text("");
+    m_rich_text_label->append_text(new_text);
+    m_rich_text_label->append_text("\n");
 }
 
 void Console::_input(const Ref<InputEvent> &event) {
