@@ -20,6 +20,7 @@
 #include <godot_cpp/variant/array.hpp>
 #include <godot_cpp/variant/string.hpp>
 #include <godot_cpp/variant/variant.hpp>
+#include <godot_cpp/classes/input_event_action.hpp>
 
 using namespace godot;
 
@@ -101,22 +102,39 @@ Level::Level() {
     add_child(m_game_layer);
 
     m_tiles_node = memnew(Node);
+    if (!m_tiles_node) {
+        std::exit(1);
+    }
     m_tiles_node->set_name("Tiles");
     m_game_layer->add_child(m_tiles_node);
 
     m_collectables_node = memnew(Node);
+    if (!m_collectables_node) {
+        std::exit(1);
+    }
     m_collectables_node->set_name("Collectables");
     m_game_layer->add_child(m_collectables_node);
 
     m_mobs_node = memnew(Node);
+    if (!m_mobs_node) {
+        std::exit(1);
+    }
     m_mobs_node->set_name("Mobs");
     m_game_layer->add_child(m_mobs_node);
 
     m_particles_node = memnew(Node);
+    if (!m_particles_node) {
+        std::exit(1);
+    }
     m_particles_node->set_name("Particles");
     m_game_layer->add_child(m_particles_node);
 
     m_editor.m_brush = memnew(Brush(this));
+    if (!m_editor.m_brush) {
+        std::exit(1);
+    }
+    m_editor.m_brush->set_visible(false);
+    m_game_layer->add_child(m_editor.m_brush);
     m_editor.m_enabled = false;
 
     if (auto map = MapData::load_bare_map(); map.has_value()) {
@@ -200,36 +218,33 @@ Error Level::export_current_map(const String &path) {
     return m_curmap->save_map(path);
 }
 
-
-void Level::_input(const Ref<InputEvent> &event) {
-    handle_editor_input(event);
+void Level::_unhandled_input(const Ref<InputEvent> &event) {
+    if (handle_console_open(event)) return;
+    if (handle_editor_toggle(event)) return;
 }
 
-void Level::handle_editor_input(const Ref<InputEvent> &event) {
-    static auto ignore_next_f1_press = false;
-    static auto ignore_next_f1_release = false;
-    const auto key_event = Object::cast_to<const InputEventKey>(*event);
+bool Level::handle_console_open(const Ref<InputEvent> &event) {
+    if (event->is_action_pressed("ui_open_console")) {
+        m_console->set_visible(true);
+        m_console->m_line_edit->grab_focus();
+        get_viewport()->set_input_as_handled();
+        get_tree()->set_pause(true);
+        return true;
+    }
 
-    if (!key_event) return;
+    return false;
+}
 
-    if (key_event->is_pressed() && key_event->get_keycode() == KEY_F1 && !ignore_next_f1_press) {
-        ignore_next_f1_press = true;
-        ignore_next_f1_release = false;
-
+bool Level::handle_editor_toggle(const Ref<InputEvent> &event) {
+    if (event->is_action_pressed("ui_toggle_level_editor")) {
         m_editor.m_enabled = !m_editor.m_enabled;
-        if (m_editor.m_enabled) {
-            m_game_layer->add_child(m_editor.m_brush);
-            UtilityFunctions::print("Editor enabled");
-        } else {
-            m_game_layer->remove_child(m_editor.m_brush);
-            UtilityFunctions::print("Editor disabled");
-        }
+        m_editor.m_brush->set_visible(m_editor.m_enabled);
+        m_editor.m_brush->set_process_mode(m_editor.m_enabled ? ProcessMode::PROCESS_MODE_INHERIT : ProcessMode::PROCESS_MODE_DISABLED);
+        get_viewport()->set_input_as_handled();
+        return true;
     }
 
-    if (key_event->is_released() && key_event->get_keycode() == KEY_F1 && !ignore_next_f1_release) {
-        ignore_next_f1_press = false;
-        ignore_next_f1_release = true;
-    }
+    return false;
 }
 
 void Level::_ready() {

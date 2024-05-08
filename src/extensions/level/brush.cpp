@@ -35,13 +35,13 @@ Brush::Brush(Level *level) : m_level(level) {
     m_variant = 0;
 
     set_name("Level editor brush");
+    set_process_mode(ProcessMode::PROCESS_MODE_DISABLED);
 
     set_process_priority(static_cast<int>(ProcessingPriority::Tiles));
     set_z_index(static_cast<int>(ZIndex::EditorBrush));
 
     set_texture(m_level->m_tile_preloader->get_resource(TileData::get_tile_variants()[m_tile_group][m_variant].data()));
     set_self_modulate(Color(1, 1, 1, 0.5));
-    set_visible(true);
 }
 
 Brush::~Brush() {

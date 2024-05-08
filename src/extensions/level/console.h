@@ -20,9 +20,7 @@ public:
 	Console(Level *level);
 	~Console();
 
-	void _ready() override;
-	void _process(double delta) override;
-    void _gui_input(const Ref<InputEvent> &event) override;
+    void _input(const Ref<InputEvent> &event) override;
 
 	Level *m_level;
     RichTextLabel *m_rich_text_label;

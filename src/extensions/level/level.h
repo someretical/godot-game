@@ -73,14 +73,15 @@ public:
 	Level();
 	~Level();
 
-	void _input(const Ref<InputEvent> &event) override;
+	void _unhandled_input(const Ref<InputEvent> &event) override;
 	void _ready() override;
 
 	void update_camera();
 	void set_camera_pos(const Vector2 pos);
 	Vector2 get_camera_pos() const;
 
-	void handle_editor_input(const Ref<InputEvent> &event);
+	bool handle_console_open(const Ref<InputEvent> &event);
+	bool handle_editor_toggle(const Ref<InputEvent> &event);
 	Error import_map_inplace(const String &path);
 	Error export_current_map(const String &path);
 

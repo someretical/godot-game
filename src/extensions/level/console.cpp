@@ -5,6 +5,9 @@
 #include <godot_cpp/classes/margin_container.hpp>
 #include <godot_cpp/classes/v_box_container.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
+#include <godot_cpp/classes/input_event_action.hpp>
+#include <godot_cpp/classes/scene_tree.hpp>
+#include <godot_cpp/classes/viewport.hpp>
 
 using namespace godot;
 
@@ -16,6 +19,7 @@ Console::Console() {
 
 Console::Console(Level *level) : m_level(level) {
     set_name("Console control node");
+    set_process_mode(ProcessMode::PROCESS_MODE_WHEN_PAUSED);
     set_size(Vector2{CAMERA_WIDTH, CAMERA_HEIGHT});
     set_position(Vector2{-CAMERA_WIDTH/2, -CAMERA_HEIGHT/2});
 
@@ -24,7 +28,7 @@ Console::Console(Level *level) : m_level(level) {
         std::exit(1);
     }
     panel_container->set_name("Panel container");
-    panel_container->set_size(Vector2{CAMERA_WIDTH, 140});
+    panel_container->set_size(Vector2{CAMERA_WIDTH, CAMERA_HEIGHT});
     add_child(panel_container);
 
     auto margin_container1 = memnew(MarginContainer);
@@ -69,18 +73,16 @@ Console::Console(Level *level) : m_level(level) {
     m_line_edit->set_placeholder("Enter command...");
     v_box_container->add_child(m_line_edit);
 
-    set_visible(true);
+    set_visible(false);
 }
 
 Console::~Console() {
 }
 
-void Console::_ready() {
-}
-
-void Console::_process(double delta) {
-}
-
-void Console::_gui_input(const Ref<InputEvent> &event) {
-
+void Console::_input(const Ref<InputEvent> &event) {
+    if (event->is_action_pressed("ui_cancel")) {
+        set_visible(false);
+        get_viewport()->set_input_as_handled();
+        get_tree()->set_pause(false);
+    }
 }
