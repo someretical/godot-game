@@ -45,7 +45,7 @@ void Tile::_process(double delta) {
 }
 
 void Tile::_physics_process(double delta) {
-    const auto campos = m_level->m_camera_pos;
+    const auto campos = m_level->m_camera_true_pos;
 
     if (abs(m_pos.x - campos.x) > TILE_COUNT_X * HALF_TILE) {
         if (m_pos.x < campos.x) {

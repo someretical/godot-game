@@ -76,7 +76,7 @@ const char *PLAYER_ANIMATIONS[] = {
 void Player::_bind_methods() {
     ClassDB::bind_method(D_METHOD("get_pos"), &Player::get_pos);
     ClassDB::bind_method(D_METHOD("set_pos", "pos"), &Player::set_pos);
-    ClassDB::add_property("Player", PropertyInfo(Variant::VECTOR2, "m_pos"), "set_pos", "get_pos");
+    ClassDB::add_property("Player", PropertyInfo(Variant::VECTOR2, "m_true_pos"), "set_pos", "get_pos");
 
     ClassDB::bind_method(D_METHOD("get_vel"), &Player::get_vel);
     ClassDB::bind_method(D_METHOD("set_vel", "vel"), &Player::set_vel);
@@ -106,13 +106,15 @@ void Player::_bind_methods() {
 Player::Player() {
 }
 
-Player::Player(Level *level, Vector2 pos) : m_level(level), m_pos(pos) {
+Player::Player(Level *level, Vector2 pos) : m_level(level), m_true_pos(pos) {
     m_jump_time = 0;
     m_fall_time = 0;
     m_ground_time = 0;
     m_direction = DIRECTION_RIGHT;
     m_jump_start_x = 0;
     m_action = PlayerAction::IDLE;
+
+    set_name("Player 2DAnimatedSprite");
 
     set_process_priority(static_cast<int>(ProcessingPriority::Player));
     set_physics_process_priority(static_cast<int>(PhysicsProcessingPriority::Player));
@@ -237,7 +239,7 @@ void Player::process_x() {
 
                 /* create skid cloud every SMOKE_PARTICLE_DELAY ticks the player is on the ground */
                 if (m_fall_time == 0 && m_ground_time % SMOKE_PARTICLE_DELAY == 0) {
-                    SkidCloud *cloud = memnew(SkidCloud(m_level, m_pos));
+                    SkidCloud *cloud = memnew(SkidCloud(m_level, m_true_pos));
                     m_level->m_particles_node->add_child(cloud);
                 }
             } else {
@@ -247,12 +249,12 @@ void Player::process_x() {
         }
     }
 
-    const auto new_pos = m_pos + Vector2(m_vel.x, 0);
+    const auto new_pos = m_true_pos + Vector2(m_vel.x, 0);
     if (check_collision(new_pos)) {
         if (m_vel.x > 0) {
             /*
             In these roundf functions (and the ones in process_y), the calculations assume that:
-            - as of m_pos, the centre of the player is not within any other tile hitbox
+            - as of m_true_pos, the centre of the player is not within any other tile hitbox
             - as of new_pos, the centre of the player is STILL not within any other tile hitbox
             
             HOWEVER, as of new_pos, the boundary of the player's hitbox MAY be within a tile hitbox which triggers the collision check
@@ -260,21 +262,21 @@ void Player::process_x() {
             the only way to fix this is to add an extra check but since collision checking is expensive, the cheap alternative is to just mention the constraint that the maximum velocity in a direction should be less than or equal to the minimum distance between the player's centre and the edge of the player's hitbox
             this affects both X and Y directions but extra care should be taken in the Y direction as the hitbox is usually not symmetrical
             */
-            m_pos.x = roundf(new_pos.x + (HALF_TILE + HITBOX_RIGHT_GAP) - fmodf(new_pos.x, TILE_SIZE)) - TINY;
+            m_true_pos.x = roundf(new_pos.x + (HALF_TILE + HITBOX_RIGHT_GAP) - fmodf(new_pos.x, TILE_SIZE)) - TINY;
         } else {
-            m_pos.x = roundf(new_pos.x + (HALF_TILE - HITBOX_LEFT_GAP) - fmodf(new_pos.x, TILE_SIZE)) + TINY;
+            m_true_pos.x = roundf(new_pos.x + (HALF_TILE - HITBOX_LEFT_GAP) - fmodf(new_pos.x, TILE_SIZE)) + TINY;
         }
 
         /* make the player fall straight down if they were in the middle of a jump and ran into something horizontally */
         /* we store m_jump_start_x to ensure that if the player was already against a wall, they can jump to full height and move as necessary */
-        if (m_pos.x != m_jump_start_x && m_jump_time > 0) {
+        if (m_true_pos.x != m_jump_start_x && m_jump_time > 0) {
             m_jump_time = MAX_JUMP_TIME + 1;
             m_jump_start_x = 0;
         }
 
         m_vel.x = 0;
     } else {
-        m_pos.x += m_vel.x;
+        m_true_pos.x += m_vel.x;
     }
 }
 
@@ -305,7 +307,7 @@ void Player::process_y() {
     if (jumping) {
         if (m_fall_time < JUMP_DELAY || m_jump_time > 0) {
             if (m_jump_time == 0) {
-                m_jump_start_x = m_pos.x;
+                m_jump_start_x = m_true_pos.x;
             }
 
             m_jump_time++;
@@ -319,7 +321,7 @@ void Player::process_y() {
         m_jump_time = 0;
     }
 
-    const auto new_pos = m_pos + Vector2(0, m_vel.y);
+    const auto new_pos = m_true_pos + Vector2(0, m_vel.y);
     if (check_collision(new_pos)) {
         if (m_vel.y > 0) {
             /* player has fallen down and is now resting on a tile */
@@ -337,18 +339,18 @@ void Player::process_y() {
                 m_jump_time = 0;
             }
 
-            m_pos.y = roundf(new_pos.y + HITBOX_BOTTOM_GAP - fmodf(new_pos.y, TILE_SIZE)) - TINY;
+            m_true_pos.y = roundf(new_pos.y + HITBOX_BOTTOM_GAP - fmodf(new_pos.y, TILE_SIZE)) - TINY;
         } else {
             /* player has hit their head on the bottom side of a tile */
             /* increase jump time artificially so the player cannot "stick" to the bottom side of the side */
             m_jump_time = MAX_JUMP_TIME + 1;
 
             /* the 11 is the empty number of pixels between the top of the hitbox and the edge of the sprite */
-            m_pos.y = roundf(new_pos.y + (TILE_SIZE - HITBOX_TOP_GAP) - fmodf(new_pos.y, TILE_SIZE)) + TINY;
+            m_true_pos.y = roundf(new_pos.y + (TILE_SIZE - HITBOX_TOP_GAP) - fmodf(new_pos.y, TILE_SIZE)) + TINY;
         }
         m_vel.y = 0;
     } else {
-        m_pos.y += m_vel.y;
+        m_true_pos.y += m_vel.y;
     }
 }
 
@@ -362,15 +364,15 @@ void Player::_physics_process(double delta) {
     m_level->update_camera();
 
     /* update where player is located on screen */
-    set_position(m_pos - m_level->m_camera_pos);
+    set_position(m_true_pos - m_level->m_camera_true_pos);
 }
 
 void Player::set_pos(const Vector2 pos) {
-    m_pos = pos;
+    m_true_pos = pos;
 }
 
 Vector2 Player::get_pos() const {
-    return m_pos;
+    return m_true_pos;
 }
 
 void Player::set_vel(const Vector2 vel) {

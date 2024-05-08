@@ -26,7 +26,7 @@ using namespace godot;
 void Level::_bind_methods() {
     ClassDB::bind_method(D_METHOD("get_camera_pos"), &Level::get_camera_pos);
 	ClassDB::bind_method(D_METHOD("set_camera_pos", "pos"), &Level::set_camera_pos);
-    ClassDB::add_property("Level", PropertyInfo(Variant::VECTOR2, "m_camera_pos"), "set_camera_pos", "get_camera_pos");
+    ClassDB::add_property("Level", PropertyInfo(Variant::VECTOR2, "m_camera_true_pos"), "set_camera_pos", "get_camera_pos");
 }
 
 Level::Level() {
@@ -36,11 +36,17 @@ Level::Level() {
     }
 
     m_rng = memnew(RandomNumberGenerator);
+    if (!m_rng) {
+        std::exit(1);
+    }
     m_rng->randomize();
 
     const auto loader = ResourceLoader::get_singleton();
 
     m_tile_preloader = memnew(ResourcePreloader);
+    if (!m_tile_preloader) {
+        std::exit(1);
+    }
     m_tile_preloader->set_name("Tile Preloader");
     m_tile_preloader->add_resource("Blue-1", loader->load("src/assets/tiles/blue/Blue-1.png"));
     m_tile_preloader->add_resource("Blue-2", loader->load("src/assets/tiles/blue/Blue-2.png"));
@@ -69,32 +75,48 @@ Level::Level() {
     m_tile_preloader->add_resource("Question4", loader->load("src/assets/tiles/question/Question4.png"));
     add_child(m_tile_preloader);
 
-    m_console = memnew(Console(this));
-    m_console->set_name("Console");
-    add_child(m_console);
+    m_hud_layer = memnew(CanvasLayer);
+    if (!m_hud_layer) {
+        std::exit(1);
+    }
+    m_hud_layer->set_name("HUD layer");
+    m_hud_layer->set_layer(HUD_LAYER);
+    m_hud_layer->set_offset(Vector2{CAMERA_WIDTH / 2, CAMERA_HEIGHT / 2});
+    add_child(m_hud_layer);
 
-    m_map_node = memnew(Node);
-    m_map_node->set_name("Map");
-    add_child(m_map_node);
+    m_console = memnew(Console(this));
+    if (!m_console) {
+        std::exit(1);
+    }
+    m_console->set_name("Console");
+    m_hud_layer->add_child(m_console);
+
+    m_game_layer = memnew(CanvasLayer);
+    if (!m_game_layer) {
+        std::exit(1);
+    }
+    m_game_layer->set_name("Game layer");
+    m_game_layer->set_layer(GAME_LAYER);
+    m_game_layer->set_offset(Vector2{CAMERA_WIDTH / 2, CAMERA_HEIGHT / 2});
+    add_child(m_game_layer);
 
     m_tiles_node = memnew(Node);
     m_tiles_node->set_name("Tiles");
-    m_map_node->add_child(m_tiles_node);
+    m_game_layer->add_child(m_tiles_node);
 
     m_collectables_node = memnew(Node);
     m_collectables_node->set_name("Collectables");
-    m_map_node->add_child(m_collectables_node);
+    m_game_layer->add_child(m_collectables_node);
 
     m_mobs_node = memnew(Node);
     m_mobs_node->set_name("Mobs");
-    m_map_node->add_child(m_mobs_node);
+    m_game_layer->add_child(m_mobs_node);
 
     m_particles_node = memnew(Node);
     m_particles_node->set_name("Particles");
-    m_map_node->add_child(m_particles_node);
+    m_game_layer->add_child(m_particles_node);
 
     m_editor.m_brush = memnew(Brush(this));
-    m_editor.m_brush->set_name("Brush");
     m_editor.m_enabled = false;
 
     if (auto map = MapData::load_bare_map(); map.has_value()) {
@@ -127,9 +149,10 @@ Level::Level() {
 
     /* Setup camera */
     m_camera = memnew(Camera2D);
+    m_camera->set_name("Camera");
     m_camera->set_zoom(Vector2(SCREEN_ZOOM, SCREEN_ZOOM));
     add_child(m_camera);
-    m_camera_pos = Vector2{CAMERA_WIDTH / 2, CAMERA_HEIGHT / 2};
+    m_camera_true_pos = Vector2{CAMERA_WIDTH / 2, CAMERA_HEIGHT / 2};
 }
 
 Level::~Level() {
@@ -138,29 +161,29 @@ Level::~Level() {
 }
 
 void Level::set_camera_pos(const Vector2 pos) {
-    m_camera_pos = pos;
+    m_camera_true_pos = pos;
 }
 
 Vector2 Level::get_camera_pos() const {
-    return m_camera_pos;
+    return m_camera_true_pos;
 }
 
 void Level::update_camera() {
     /* update camera location in level */
-    m_camera_pos.x = m_player->m_pos.x;
+    m_camera_true_pos.x = m_player->m_true_pos.x;
     /* vertical movement of camera lags behind player position to prevent jerkiness */
-    m_camera_pos.y += (m_player->m_pos.y - m_camera_pos.y) / 4;
+    m_camera_true_pos.y += (m_player->m_true_pos.y - m_camera_true_pos.y) / 4;
 
-    if (m_camera_pos.x < CAMERA_WIDTH / 2) {
-        m_camera_pos.x = CAMERA_WIDTH / 2;
-    } else if (m_camera_pos.x > m_curmap->m_dimensions.x * TILE_SIZE - CAMERA_WIDTH / 2) {
-        m_camera_pos.x = m_curmap->m_dimensions.x * TILE_SIZE - CAMERA_WIDTH / 2;
+    if (m_camera_true_pos.x < CAMERA_WIDTH / 2) {
+        m_camera_true_pos.x = CAMERA_WIDTH / 2;
+    } else if (m_camera_true_pos.x > m_curmap->m_dimensions.x * TILE_SIZE - CAMERA_WIDTH / 2) {
+        m_camera_true_pos.x = m_curmap->m_dimensions.x * TILE_SIZE - CAMERA_WIDTH / 2;
     }
 
-    if (m_camera_pos.y < CAMERA_HEIGHT / 2) {
-        m_camera_pos.y = CAMERA_HEIGHT / 2;
-    } else if (m_camera_pos.y > m_curmap->m_dimensions.y * TILE_SIZE - CAMERA_HEIGHT / 2) {
-        m_camera_pos.y = m_curmap->m_dimensions.y * TILE_SIZE - CAMERA_HEIGHT / 2;
+    if (m_camera_true_pos.y < CAMERA_HEIGHT / 2) {
+        m_camera_true_pos.y = CAMERA_HEIGHT / 2;
+    } else if (m_camera_true_pos.y > m_curmap->m_dimensions.y * TILE_SIZE - CAMERA_HEIGHT / 2) {
+        m_camera_true_pos.y = m_curmap->m_dimensions.y * TILE_SIZE - CAMERA_HEIGHT / 2;
     }
 }
 
@@ -195,10 +218,10 @@ void Level::handle_editor_input(const Ref<InputEvent> &event) {
 
         m_editor.m_enabled = !m_editor.m_enabled;
         if (m_editor.m_enabled) {
-            add_child(m_editor.m_brush);
+            m_game_layer->add_child(m_editor.m_brush);
             UtilityFunctions::print("Editor enabled");
         } else {
-            remove_child(m_editor.m_brush);
+            m_game_layer->remove_child(m_editor.m_brush);
             UtilityFunctions::print("Editor disabled");
         }
     }

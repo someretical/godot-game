@@ -41,7 +41,7 @@ void SkidCloud::_ready() {
 }
 
 void SkidCloud::_process(double delta) {
-    set_position(m_pos - m_level->m_camera_pos);
+    set_position(m_pos - m_level->m_camera_true_pos);
 
     if (get_frame() == 2) {
         set_visible(false);

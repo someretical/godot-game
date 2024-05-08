@@ -33,6 +33,9 @@ Brush::Brush() {
 Brush::Brush(Level *level) : m_level(level) {
     m_tile_group = 0;
     m_variant = 0;
+
+    set_name("Level editor brush");
+
     set_process_priority(static_cast<int>(ProcessingPriority::Tiles));
     set_z_index(static_cast<int>(ZIndex::EditorBrush));
 
@@ -48,7 +51,7 @@ void Brush::_ready() {
 }
 
 void Brush::_process(double delta) {
-    const auto &campos = m_level->m_camera_pos;
+    const auto &campos = m_level->m_camera_true_pos;
     const auto mouse_pos = get_viewport()->get_mouse_position();
     const auto grid_pos = Vector2i(
         static_cast<int>((mouse_pos.x + campos.x - (CAMERA_WIDTH / 2)) / TILE_SIZE),
@@ -86,8 +89,8 @@ void Brush::_physics_process(double delta) {
 
 Vector2i Brush::get_grid_pos(const Vector2 pos) const {
     const auto grid_pos = Vector2i(
-        static_cast<int>((pos.x + m_level->m_camera_pos.x - (CAMERA_WIDTH / 2)) / TILE_SIZE),
-        static_cast<int>((pos.y + m_level->m_camera_pos.y - (CAMERA_HEIGHT / 2)) / TILE_SIZE)
+        static_cast<int>((pos.x + m_level->m_camera_true_pos.x - (CAMERA_WIDTH / 2)) / TILE_SIZE),
+        static_cast<int>((pos.y + m_level->m_camera_true_pos.y - (CAMERA_HEIGHT / 2)) / TILE_SIZE)
     );
 
     if (
