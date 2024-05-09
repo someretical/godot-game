@@ -33,14 +33,32 @@ void Tile::_process(double delta) {
 
     const auto data = m_level->m_curmap->m_tile_data[m_tile_index.y][m_tile_index.x];
 
-    if (data.m_tile_group == -1 || data.m_variant == -1) {
-        set_visible(false);
-        return;
+    switch (data.m_tile_group) {
+        /* static tiles */
+        case 0:
+        case 1:
+        case 2:
+        case 3:
+            set_texture(
+                m_level->m_tile_preloader->get_resource(TileData::get_tile_variants()[data.m_tile_group][data.m_variant].data())
+            );
+            break;
+
+        /* animated tiles */
+        case 4:
+        case 5:
+            set_texture(
+                m_level->m_tile_preloader->get_resource(
+                    /* disable animations while in editor */
+                    TileData::get_tile_variants()[data.m_tile_group][m_level->get_tile_frame_mod4() * !m_level->m_editor.m_enabled].data()
+                )
+            );
+            break;
+
+        default:
+            return set_visible(false);
     }
 
-    set_texture(
-        m_level->m_tile_preloader->get_resource(TileData::get_tile_variants()[data.m_tile_group][data.m_variant].data())
-    );
     set_visible(true);
 }
 

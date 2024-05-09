@@ -3,6 +3,7 @@
 #include "mapdata.h"
 #include "player.h"
 
+#include <format>
 #include <godot_cpp/classes/panel_container.hpp>
 #include <godot_cpp/classes/margin_container.hpp>
 #include <godot_cpp/classes/v_box_container.hpp>
@@ -99,54 +100,32 @@ bool Console::handle_expand_command(const PackedStringArray &args) {
     }
 
     const int amount = args[2].to_int();
-    /* the following code is unoptimized as fuck */
-    if (args[1] == "d") {
-        Vector2i absolute_offset{0, abs(amount)};
-        Vector2i offset = ((amount > 0) - (amount < 0)) * absolute_offset;
-        Vector2i cur_dimensions = m_level->m_curmap->m_dimensions;
-        Vector2i new_dimensions = m_level->m_curmap->m_dimensions + offset;
+    Vector2i absolute_offset{0, 0};
+    if (direction == "u" || direction == "d") {
+        absolute_offset.y = abs(amount);
+    } else {
+        absolute_offset.x = abs(amount);
+    }
+    Vector2i offset = ((amount > 0) - (amount < 0)) * absolute_offset;
+    Vector2i cur_dimensions = m_level->m_curmap->m_dimensions;
+    Vector2i new_dimensions = m_level->m_curmap->m_dimensions + offset;
 
-        if (new_dimensions.x <= TILE_COUNT_X || new_dimensions.y <= TILE_COUNT_Y) {
-            m_rich_text_label->append_text(String("Map cannot be resized smaller than ") + TILE_COUNT_X + String(" ") + TILE_COUNT_Y + String("\n"));
-            return true;
-        }
+    if (new_dimensions.x <= TILE_COUNT_X || new_dimensions.y <= TILE_COUNT_Y) {
+        m_rich_text_label->append_text(std::format("Map cannot be resized smaller than {}x{}\n", TILE_COUNT_X, TILE_COUNT_Y).c_str());
+        return true;
+    }
 
-        if (auto map = MapData::load_bare_map(new_dimensions); map.has_value()) {
-            const auto result = map.value();
+    if (auto map = MapData::load_bare_map(new_dimensions); map.has_value()) {
+        auto result = map.value();
 
+        /* copy over appropriate parts of the map */
+        if (args[1] == "d") {
             for (int j = 0; j < std::min(cur_dimensions.y, new_dimensions.y); j++) {
                 for (int i = 0; i < cur_dimensions.x; i++) {
                     result->m_tile_data[j][i] = m_level->m_curmap->m_tile_data[j][i];
                 }
             }
-
-            m_level->m_curmap = result;
-            m_level->m_bounds = Rect2{
-                0 + TINY, 
-                0 + TINY, 
-                static_cast<float>(new_dimensions.x * TILE_SIZE) - (2 * TINY), 
-                static_cast<float>(new_dimensions.y * TILE_SIZE) - (2 * TINY)
-            };
-            m_level->m_player->m_true_pos.y += amount * TILE_SIZE;
-
-            m_rich_text_label->append_text("Map expanded\n");
-        } else {
-            m_rich_text_label->append_text("Failed to expand map because std::unexpected\n");
-        }
-    } else if (args[1] == "u") {
-        Vector2i absolute_offset{0, abs(amount)};
-        Vector2i offset = ((amount > 0) - (amount < 0)) * absolute_offset;
-        Vector2i cur_dimensions = m_level->m_curmap->m_dimensions;
-        Vector2i new_dimensions = m_level->m_curmap->m_dimensions + offset;
-
-        if (new_dimensions.x <= TILE_COUNT_X || new_dimensions.y <= TILE_COUNT_Y) {
-            m_rich_text_label->append_text(String("Map cannot be resized smaller than ") + TILE_COUNT_X + String(" ") + TILE_COUNT_Y + String("\n"));
-            return true;
-        }
-
-        if (auto map = MapData::load_bare_map(new_dimensions); map.has_value()) {
-            const auto result = map.value();
-
+        } else if (args[1] == "u") {
             if (amount >= 0) {
                 /* create empty space at the top */
                 for (int j = offset.y; j < new_dimensions.y; j++) {
@@ -162,33 +141,7 @@ bool Console::handle_expand_command(const PackedStringArray &args) {
                     }
                 }
             }
-
-            m_level->m_curmap = result;
-            m_level->m_bounds = Rect2{
-                0 + TINY, 
-                0 + TINY, 
-                static_cast<float>(new_dimensions.x * TILE_SIZE) - (2 * TINY), 
-                static_cast<float>(new_dimensions.y * TILE_SIZE) - (2 * TINY)
-            };
-
-            m_rich_text_label->append_text("Map expanded\n");
-        } else {
-            m_rich_text_label->append_text("Failed to expand map because std::unexpected\n");
-        }
-    } else if (args[1] == "l") {
-        Vector2i absolute_offset{abs(amount), 0};
-        Vector2i offset = ((amount > 0) - (amount < 0)) * absolute_offset;
-        Vector2i cur_dimensions = m_level->m_curmap->m_dimensions;
-        Vector2i new_dimensions = m_level->m_curmap->m_dimensions + offset;
-
-        if (new_dimensions.x <= TILE_COUNT_X || new_dimensions.y <= TILE_COUNT_Y) {
-            m_rich_text_label->append_text(String("Map cannot be resized smaller than ") + TILE_COUNT_X + String(" ") + TILE_COUNT_Y + String("\n"));
-            return true;
-        }
-
-        if (auto map = MapData::load_bare_map(new_dimensions); map.has_value()) {
-            const auto result = map.value();
-
+        } else if (args[1] == "l") {
             if (amount >= 0) {
                 /* create empty space at the left */
                 for (int j = 0; j < cur_dimensions.y; j++) {
@@ -204,52 +157,30 @@ bool Console::handle_expand_command(const PackedStringArray &args) {
                     }
                 }
             }
-
-            m_level->m_curmap = result;
-            m_level->m_bounds = Rect2{
-                0 + TINY, 
-                0 + TINY, 
-                static_cast<float>(new_dimensions.x * TILE_SIZE) - (2 * TINY), 
-                static_cast<float>(new_dimensions.y * TILE_SIZE) - (2 * TINY)
-            };
-
-            m_rich_text_label->append_text("Map expanded\n");
-        } else {
-            m_rich_text_label->append_text("Failed to expand map because std::unexpected\n");
-        }
-    } else if (args[1] == "r") {
-        Vector2i absolute_offset{abs(amount), 0};
-        Vector2i offset = ((amount > 0) - (amount < 0)) * absolute_offset;
-        Vector2i cur_dimensions = m_level->m_curmap->m_dimensions;
-        Vector2i new_dimensions = m_level->m_curmap->m_dimensions + offset;
-
-        if (new_dimensions.x <= TILE_COUNT_X || new_dimensions.y <= TILE_COUNT_Y) {
-            m_rich_text_label->append_text(String("Map cannot be resized smaller than ") + TILE_COUNT_X + String(" ") + TILE_COUNT_Y + String("\n"));
-            return true;
-        }
-
-        if (auto map = MapData::load_bare_map(new_dimensions); map.has_value()) {
-            const auto result = map.value();
-
+        } else if (args[1] == "r") {
             for (int j = 0; j < cur_dimensions.y; j++) {
                 for (int i = 0; i < std::min(cur_dimensions.x, new_dimensions.x); i++) {
                     result->m_tile_data[j][i] = m_level->m_curmap->m_tile_data[j][i];
                 }
             }
-
-            m_level->m_curmap = result;
-            m_level->m_bounds = Rect2{
-                0 + TINY, 
-                0 + TINY, 
-                static_cast<float>(new_dimensions.x * TILE_SIZE) - (2 * TINY), 
-                static_cast<float>(new_dimensions.y * TILE_SIZE) - (2 * TINY)
-            };
-            m_level->m_player->m_true_pos.x += amount * TILE_SIZE;
-
-            m_rich_text_label->append_text("Map expanded\n");
-        } else {
-            m_rich_text_label->append_text("Failed to expand map because std::unexpected\n");
         }
+
+        m_level->m_curmap = result;
+        m_level->m_bounds = Rect2{
+            0 + TINY, 
+            0 + TINY, 
+            static_cast<float>(new_dimensions.x * TILE_SIZE) - (2 * TINY), 
+            static_cast<float>(new_dimensions.y * TILE_SIZE) - (2 * TINY)
+        };
+
+        /* adjust player position as necessary so they don't get clipped off the screen */
+        if (args[1] == "r") m_level->m_player->m_true_pos.x += amount * TILE_SIZE;
+        else if (args[1] == "d") m_level->m_player->m_true_pos.y += amount * TILE_SIZE;
+
+        /* print success message */
+        m_rich_text_label->append_text(std::format("Map dimensions changed from {}x{} to {}x{}\n", cur_dimensions.x, cur_dimensions.y, new_dimensions.x, new_dimensions.y).c_str());
+    } else {
+        m_rich_text_label->append_text("Failed to expand map because std::unexpected\n");
     }
 
     return true;
@@ -285,6 +216,7 @@ void Console::handle_command(const String new_text) {
     }
 }
 
+/* we override _input here because otherwise the line edit steals the _gui_input event */
 void Console::_input(const Ref<InputEvent> &event) {
     if (event->is_action_pressed("ui_cancel")) {
         set_visible(false);

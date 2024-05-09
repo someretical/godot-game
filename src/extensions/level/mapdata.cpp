@@ -117,7 +117,12 @@ std::expected<std::shared_ptr<MapData>, Error> MapData::load_map_v1(const String
                 case 3:
                     if (variant != 0) return std::unexpected(FAILED);
                     break;
-                
+                case 4:
+                    if (variant < 0 || variant >= 4) return std::unexpected(FAILED);
+                    break;
+                case 5:
+                    if (variant < 0 || variant >= 4) return std::unexpected(FAILED);
+                    break;
                 default:
                     return std::unexpected(FAILED);
             }

@@ -46,6 +46,7 @@ enum class PhysicsProcessingPriority {
 };
 
 enum class ProcessingPriority {
+	Level = 0,
 	Player = 10,
 	SkidCloud = 11,
 	Collectibles = 20,
@@ -60,6 +61,7 @@ enum class ZIndex {
 	Player = 300,
 	Mobs = 200,
 	Collectibles = 100,
+	StartPos = 1,
 	Tiles = 0
 };
 
@@ -75,6 +77,7 @@ public:
 
 	void _unhandled_input(const Ref<InputEvent> &event) override;
 	void _ready() override;
+	void _process(double delta) override;
 
 	void update_camera();
 	void set_camera_pos(const Vector2 pos);
@@ -84,6 +87,8 @@ public:
 	bool handle_editor_toggle(const Ref<InputEvent> &event);
 	Error import_map_inplace(const String &path);
 	Error export_current_map(const String &path);
+
+	int get_tile_frame_mod4() const;
 
 	RandomNumberGenerator *m_rng;
 	ResourcePreloader *m_tile_preloader;
@@ -99,6 +104,8 @@ public:
 	Node *m_collectables_node;
 	Node *m_mobs_node;
 	Node *m_particles_node;
+	double m_time;
+
 	struct editor {
 		Brush *m_brush;
 		bool m_enabled;

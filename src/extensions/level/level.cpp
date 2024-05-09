@@ -31,6 +31,8 @@ void Level::_bind_methods() {
 }
 
 Level::Level() {
+    set_process_priority(static_cast<int>(ProcessingPriority::Level));
+
     /* prevent process from running in background editor */
     if (Engine::get_singleton()->is_editor_hint()) {
         set_process_mode(ProcessMode::PROCESS_MODE_DISABLED);
@@ -259,4 +261,12 @@ bool Level::handle_editor_toggle(const Ref<InputEvent> &event) {
 }
 
 void Level::_ready() {
+}
+
+void Level::_process(double delta) {
+    m_time += delta;
+}
+
+int Level::get_tile_frame_mod4() const {
+    return static_cast<long>(m_time * 8) % 4;
 }
