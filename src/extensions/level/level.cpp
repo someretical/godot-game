@@ -149,7 +149,7 @@ Level::Level() {
 
     m_editor.m_enabled = false;
 
-    if (auto map = MapData::load_bare_map(Vector2i{100, 40}); map.has_value()) {
+    if (auto map = MapData::load_bare_map(Vector2i{30, 20}); map.has_value()) {
         m_curmap = map.value();
         m_bounds = Rect2{
             0 + TINY, 
@@ -170,13 +170,6 @@ Level::Level() {
             m_tiles_node->add_child(tile);
         }
     }
-
-    m_bounds = Rect2{
-        0 + TINY, 
-        0 + TINY, 
-        static_cast<float>(m_curmap->m_dimensions.x * TILE_SIZE) - (2 * TINY), 
-        static_cast<float>(m_curmap->m_dimensions.y * TILE_SIZE) - (2 * TINY)
-    };
 
     /* Setup player */
     m_player = memnew(Player(this, Vector2{CAMERA_WIDTH / 2, CAMERA_HEIGHT / 2}));

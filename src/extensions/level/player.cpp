@@ -30,15 +30,15 @@ constexpr int SMOKE_PARTICLE_DELAY = 7;
 Player overview:
 
 +---+---+----+---+---+
-|         11         |
+|         12         |
 +   +---+----+---+   +
-|   |     21     |   |
+|   |     20     |   |
 +   +   +----+   +   +
 | 8 | 8 | 00 | 8 | 8 |
 +   +   +----+   +   +
-|   |     25     |   |
+|   |     26     |   |
 +   +---+----+---+   +
-|         7          |
+|         6          |
 +---+---+----+---+---+
 
 - innermost box represents the centre of the sprite walk1
@@ -48,10 +48,10 @@ Player overview:
 
 constexpr int HITBOX_HEIGHT = 46;
 constexpr int HITBOX_WIDTH = 16;
-constexpr int HITBOX_TOP_OFFSET = 21;
-constexpr int HITBOX_TOP_GAP = 11;
-constexpr int HITBOX_BOTTOM_OFFSET = 25;
-constexpr int HITBOX_BOTTOM_GAP = 7;
+constexpr int HITBOX_TOP_OFFSET = 20;
+constexpr int HITBOX_TOP_GAP = 12;
+constexpr int HITBOX_BOTTOM_OFFSET = 26;
+constexpr int HITBOX_BOTTOM_GAP = 6;
 constexpr int HITBOX_LEFT_OFFSET = 8;
 constexpr int HITBOX_LEFT_GAP = 8;
 constexpr int HITBOX_RIGHT_OFFSET = 8;
@@ -268,9 +268,9 @@ void Player::process_x() {
             the only way to fix this is to add an extra check but since collision checking is expensive, the cheap alternative is to just mention the constraint that the maximum velocity in a direction should be less than or equal to the minimum distance between the player's centre and the edge of the player's hitbox
             this affects both X and Y directions but extra care should be taken in the Y direction as the hitbox is usually not symmetrical
             */
-            m_true_pos.x = roundf(new_pos.x + (HALF_TILE + HITBOX_RIGHT_GAP) - fmodf(new_pos.x, TILE_SIZE)) - TINY;
+            m_true_pos.x = roundf(new_pos.x + (HALF_TILE + HITBOX_RIGHT_GAP) - fmodf(new_pos.x, TILE_SIZE)) - (TINY + TINIER);
         } else {
-            m_true_pos.x = roundf(new_pos.x + (HALF_TILE - HITBOX_LEFT_GAP) - fmodf(new_pos.x, TILE_SIZE)) + TINY;
+            m_true_pos.x = roundf(new_pos.x + (HALF_TILE - HITBOX_LEFT_GAP) - fmodf(new_pos.x, TILE_SIZE)) + (TINY + TINIER);
         }
 
         /* make the player fall straight down if they were in the middle of a jump and ran into something horizontally */
@@ -351,14 +351,14 @@ void Player::process_y() {
                 m_jump_time = 0;
             }
 
-            m_true_pos.y = roundf(new_pos.y + HITBOX_BOTTOM_GAP - fmodf(new_pos.y, TILE_SIZE)) - TINY;
+            m_true_pos.y = roundf(new_pos.y + HITBOX_BOTTOM_GAP - fmodf(new_pos.y, TILE_SIZE)) - (TINY + TINIER);
         } else {
             /* player has hit their head on the bottom side of a tile */
             /* increase jump time artificially so the player cannot "stick" to the bottom side of the side */
             m_jump_time = MAX_JUMP_TIME + 1;
 
             /* the 11 is the empty number of pixels between the top of the hitbox and the edge of the sprite */
-            m_true_pos.y = roundf(new_pos.y + (TILE_SIZE - HITBOX_TOP_GAP) - fmodf(new_pos.y, TILE_SIZE)) + TINY;
+            m_true_pos.y = roundf(new_pos.y + (TILE_SIZE - HITBOX_TOP_GAP) - fmodf(new_pos.y, TILE_SIZE)) + (TINY + TINIER);
         }
         m_vel.y = 0;
     } else {

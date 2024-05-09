@@ -33,7 +33,8 @@ constexpr int SCREEN_TILE_WIDTH = CAMERA_WIDTH / TILE_SIZE;
 constexpr int SCREEN_TILE_HEIGHT = ceil_div(CAMERA_HEIGHT, TILE_SIZE);
 constexpr int TILE_COUNT_X = SCREEN_TILE_WIDTH + 1;
 constexpr int TILE_COUNT_Y = SCREEN_TILE_HEIGHT + 1;
-constexpr float TINY = 1.0f;
+constexpr float TINY = 0.01f;
+constexpr float TINIER = TINY * 0.1;
 
 constexpr int GAME_LAYER = 0;
 constexpr int HUD_LAYER = 1;
