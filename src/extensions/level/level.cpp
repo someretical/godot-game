@@ -5,6 +5,7 @@
 #include "tile_data.h"
 #include "mapdata.h"
 #include "console.h"
+#include "marker.h"
 
 #include <cmath>
 #include <godot_cpp/classes/scene_tree.hpp>
@@ -76,6 +77,7 @@ Level::Level() {
     m_tile_preloader->add_resource("Question2", loader->load("src/assets/tiles/question/Question2.png"));
     m_tile_preloader->add_resource("Question3", loader->load("src/assets/tiles/question/Question3.png"));
     m_tile_preloader->add_resource("Question4", loader->load("src/assets/tiles/question/Question4.png"));
+    m_tile_preloader->add_resource("StartPos", loader->load("src/assets/tiles/special/start_pos.png"));
     add_child(m_tile_preloader);
 
     m_hud_layer = memnew(CanvasLayer);
@@ -137,6 +139,14 @@ Level::Level() {
     }
     m_editor.m_brush->set_visible(false);
     m_game_layer->add_child(m_editor.m_brush);
+
+    m_editor.m_start_pos = memnew(Marker(this, Vector2{0, 0}, m_tile_preloader->get_resource("StartPos")));
+    if (!m_editor.m_start_pos) {
+        std::exit(1);
+    }
+    m_editor.m_start_pos->set_visible(false);
+    m_game_layer->add_child(m_editor.m_start_pos);
+
     m_editor.m_enabled = false;
 
     if (auto map = MapData::load_bare_map(Vector2i{100, 40}); map.has_value()) {
@@ -253,6 +263,8 @@ bool Level::handle_editor_toggle(const Ref<InputEvent> &event) {
         m_editor.m_enabled = !m_editor.m_enabled;
         m_editor.m_brush->set_visible(m_editor.m_enabled);
         m_editor.m_brush->set_process_mode(m_editor.m_enabled ? ProcessMode::PROCESS_MODE_INHERIT : ProcessMode::PROCESS_MODE_DISABLED);
+        m_editor.m_start_pos->set_visible(m_editor.m_enabled);
+        m_editor.m_start_pos->set_process_mode(m_editor.m_enabled ? ProcessMode::PROCESS_MODE_INHERIT : ProcessMode::PROCESS_MODE_DISABLED);
         get_viewport()->set_input_as_handled();
         return true;
     }

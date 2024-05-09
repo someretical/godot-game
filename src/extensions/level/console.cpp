@@ -110,7 +110,7 @@ bool Console::handle_expand_command(const PackedStringArray &args) {
     Vector2i cur_dimensions = m_level->m_curmap->m_dimensions;
     Vector2i new_dimensions = m_level->m_curmap->m_dimensions + offset;
 
-    if (new_dimensions.x <= TILE_COUNT_X || new_dimensions.y <= TILE_COUNT_Y) {
+    if (new_dimensions.x < TILE_COUNT_X || new_dimensions.y < TILE_COUNT_Y) {
         m_rich_text_label->append_text(std::format("Map cannot be resized smaller than {}x{}\n", TILE_COUNT_X, TILE_COUNT_Y).c_str());
         return true;
     }
@@ -174,8 +174,8 @@ bool Console::handle_expand_command(const PackedStringArray &args) {
         };
 
         /* adjust player position as necessary so they don't get clipped off the screen */
-        if (args[1] == "r") m_level->m_player->m_true_pos.x += amount * TILE_SIZE;
-        else if (args[1] == "d") m_level->m_player->m_true_pos.y += amount * TILE_SIZE;
+        m_level->m_player->m_true_pos.x = UtilityFunctions::clampf(m_level->m_player->m_true_pos.x, m_level->m_bounds.get_position().x + HALF_TILE, m_level->m_bounds.get_end().x - HALF_TILE);
+        m_level->m_player->m_true_pos.y = UtilityFunctions::clampf(m_level->m_player->m_true_pos.y, m_level->m_bounds.get_position().y + HALF_TILE, m_level->m_bounds.get_end().y - HALF_TILE);
 
         /* print success message */
         m_rich_text_label->append_text(std::format("Map dimensions changed from {}x{} to {}x{}\n", cur_dimensions.x, cur_dimensions.y, new_dimensions.x, new_dimensions.y).c_str());

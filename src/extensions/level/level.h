@@ -16,6 +16,7 @@ namespace godot {
 class Player;
 class Brush;
 class Console;
+class Marker;
 
 constexpr int ceil_div(int numerator, int denominator) {
     return (numerator + denominator - 1) / denominator;
@@ -32,7 +33,7 @@ constexpr int SCREEN_TILE_WIDTH = CAMERA_WIDTH / TILE_SIZE;
 constexpr int SCREEN_TILE_HEIGHT = ceil_div(CAMERA_HEIGHT, TILE_SIZE);
 constexpr int TILE_COUNT_X = SCREEN_TILE_WIDTH + 1;
 constexpr int TILE_COUNT_Y = SCREEN_TILE_HEIGHT + 1;
-constexpr float TINY = 0.1f;
+constexpr float TINY = 1.0f;
 
 constexpr int GAME_LAYER = 0;
 constexpr int HUD_LAYER = 1;
@@ -61,7 +62,7 @@ enum class ZIndex {
 	Player = 300,
 	Mobs = 200,
 	Collectibles = 100,
-	StartPos = 1,
+	Markers = 1,
 	Tiles = 0
 };
 
@@ -108,6 +109,7 @@ public:
 
 	struct editor {
 		Brush *m_brush;
+		Marker *m_start_pos;
 		bool m_enabled;
 	} m_editor;
 };
