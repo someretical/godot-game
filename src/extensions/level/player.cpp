@@ -11,6 +11,15 @@
 
 using namespace godot;
 
+static_assert(HITBOX_RIGHT_GAP + HITBOX_RIGHT_OFFSET == HALF_TILE);
+static_assert(HITBOX_LEFT_GAP + HITBOX_LEFT_OFFSET == HALF_TILE);
+static_assert(HITBOX_TOP_GAP + HITBOX_TOP_OFFSET == TILE_SIZE);
+static_assert(HITBOX_BOTTOM_GAP + HITBOX_BOTTOM_OFFSET == TILE_SIZE);
+static_assert(HITBOX_TOP_OFFSET + HITBOX_BOTTOM_OFFSET == HITBOX_HEIGHT);
+static_assert(HITBOX_LEFT_OFFSET + HITBOX_RIGHT_OFFSET == HITBOX_WIDTH);
+static_assert(HITBOX_TOP_GAP + HITBOX_TOP_OFFSET + HITBOX_BOTTOM_GAP + HITBOX_BOTTOM_OFFSET == TILE_SIZE * 2);
+static_assert(HITBOX_LEFT_GAP + HITBOX_LEFT_OFFSET + HITBOX_RIGHT_GAP + HITBOX_RIGHT_OFFSET == TILE_SIZE);
+
 constexpr float GRAVITY_ACCEL = 0.6;
 constexpr float MAX_FALL_SPEED = 10;
 constexpr int JUMP_DELAY = 4;
@@ -25,46 +34,6 @@ constexpr float X_DECEL = 0.95;
 constexpr float X_CHANGE_DIR_ACCEL = 0.2;
 constexpr float MAX_GOD_SPEED = 8;
 constexpr int SMOKE_PARTICLE_DELAY = 7;
-
-/*
-Player overview:
-
-+---+---+----+---+---+
-|         12         |
-+   +---+----+---+   +
-|   |     20     |   |
-+   +   +----+   +   +
-| 8 | 8 | 00 | 8 | 8 |
-+   +   +----+   +   +
-|   |     26     |   |
-+   +---+----+---+   +
-|         6          |
-+---+---+----+---+---+
-
-- innermost box represents the centre of the sprite walk1
-- middle box represents the player hitbox (offset)
-- outer box represents the padding to ensure the hitbox fits within a 32x64 space (gap)
-*/
-
-constexpr int HITBOX_HEIGHT = 46;
-constexpr int HITBOX_WIDTH = 16;
-constexpr int HITBOX_TOP_OFFSET = 20;
-constexpr int HITBOX_TOP_GAP = 12;
-constexpr int HITBOX_BOTTOM_OFFSET = 26;
-constexpr int HITBOX_BOTTOM_GAP = 6;
-constexpr int HITBOX_LEFT_OFFSET = 8;
-constexpr int HITBOX_LEFT_GAP = 8;
-constexpr int HITBOX_RIGHT_OFFSET = 8;
-constexpr int HITBOX_RIGHT_GAP = 8;
-
-static_assert(HITBOX_RIGHT_GAP + HITBOX_RIGHT_OFFSET == HALF_TILE);
-static_assert(HITBOX_LEFT_GAP + HITBOX_LEFT_OFFSET == HALF_TILE);
-static_assert(HITBOX_TOP_GAP + HITBOX_TOP_OFFSET == TILE_SIZE);
-static_assert(HITBOX_BOTTOM_GAP + HITBOX_BOTTOM_OFFSET == TILE_SIZE);
-static_assert(HITBOX_TOP_OFFSET + HITBOX_BOTTOM_OFFSET == HITBOX_HEIGHT);
-static_assert(HITBOX_LEFT_OFFSET + HITBOX_RIGHT_OFFSET == HITBOX_WIDTH);
-static_assert(HITBOX_TOP_GAP + HITBOX_TOP_OFFSET + HITBOX_BOTTOM_GAP + HITBOX_BOTTOM_OFFSET == TILE_SIZE * 2);
-static_assert(HITBOX_LEFT_GAP + HITBOX_LEFT_OFFSET + HITBOX_RIGHT_GAP + HITBOX_RIGHT_OFFSET == TILE_SIZE);
 
 const char *PLAYER_ANIMATIONS[] = {
 	"idle",

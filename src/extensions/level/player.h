@@ -8,6 +8,37 @@ namespace godot {
 
 class Level;
 
+/*
+Player overview:
+
++---+---+----+---+---+
+|         12         |
++   +---+----+---+   +
+|   |     20     |   |
++   +   +----+   +   +
+| 8 | 8 | 00 | 8 | 8 |
++   +   +----+   +   +
+|   |     26     |   |
++   +---+----+---+   +
+|         6          |
++---+---+----+---+---+
+
+- innermost box represents the centre of the sprite walk1
+- middle box represents the player hitbox (offset)
+- outer box represents the padding to ensure the hitbox fits within a 32x64 space (gap)
+*/
+
+constexpr int HITBOX_HEIGHT = 46;
+constexpr int HITBOX_WIDTH = 16;
+constexpr int HITBOX_TOP_OFFSET = 20;
+constexpr int HITBOX_TOP_GAP = 12;
+constexpr int HITBOX_BOTTOM_OFFSET = 26;
+constexpr int HITBOX_BOTTOM_GAP = 6;
+constexpr int HITBOX_LEFT_OFFSET = 8;
+constexpr int HITBOX_LEFT_GAP = 8;
+constexpr int HITBOX_RIGHT_OFFSET = 8;
+constexpr int HITBOX_RIGHT_GAP = 8;
+
 enum class PlayerAction {
 	IDLE,
 	WALKING,

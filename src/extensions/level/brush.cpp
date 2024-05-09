@@ -1,6 +1,7 @@
 #include "brush.h"
 #include "level.h"
 #include "tile_data.h"
+#include "marker.h"
 
 #include <godot_cpp/templates/vector.hpp>
 #include <godot_cpp/variant/string.hpp>
@@ -73,8 +74,14 @@ void Brush::_physics_process(double delta) {
         const auto max_size = TileData::get_variant_sizes()[m_tile_group];
         const auto variant_index = m_variant >= max_size ? max_size - 1 : m_variant;
 
-        existing.m_tile_group = m_tile_group;
-        existing.m_variant = variant_index;
+        if (m_tile_group == 6) {
+            /* handle start position tile differently */
+            m_level->m_curmap->m_start_pos = grid_pos;
+            m_level->m_editor.m_start_pos->m_true_pos = grid_pos;
+        } else {
+            existing.m_tile_group = m_tile_group;
+            existing.m_variant = variant_index;
+        }
     } else if (Input::get_singleton()->is_mouse_button_pressed(MouseButton::MOUSE_BUTTON_RIGHT)) {
         const auto grid_pos = get_grid_pos(get_viewport()->get_mouse_position());
         if (grid_pos.x == -1 || grid_pos.y == -1) {
@@ -88,10 +95,10 @@ void Brush::_physics_process(double delta) {
 }
 
 Vector2i Brush::get_grid_pos(const Vector2 pos) const {
-    const auto grid_pos = Vector2i(
+    const Vector2i grid_pos{
         static_cast<int>((pos.x + m_level->m_camera_true_pos.x - (CAMERA_WIDTH / 2)) / TILE_SIZE),
         static_cast<int>((pos.y + m_level->m_camera_true_pos.y - (CAMERA_HEIGHT / 2)) / TILE_SIZE)
-    );
+    };
 
     if (
         grid_pos.x < 0 || grid_pos.y < 0 || 
@@ -256,9 +263,9 @@ void Brush::handle_import_callback(bool status, PackedStringArray paths, int sel
         return;
     }
 
-    const auto err = m_level->import_map_inplace(paths[0]);
+    const auto err = m_level->load_level(paths[0]);
     if (err != Error::OK) {
-        UtilityFunctions::print("import_map_inplace error: ", err);
+        UtilityFunctions::print("load_level error: ", err);
     }
 }
 

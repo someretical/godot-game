@@ -87,7 +87,8 @@ public:
 
 	bool handle_console_open(const Ref<InputEvent> &event);
 	bool handle_editor_toggle(const Ref<InputEvent> &event);
-	Error import_map_inplace(const String &path);
+	Error load_level(const String &path);
+	Error import_mapdata_inplace(const String &path);
 	Error export_current_map(const String &path);
 
 	int get_tile_frame_mod4() const;

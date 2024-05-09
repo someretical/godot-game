@@ -15,14 +15,14 @@ protected:
 
 public:
 	Tile();
-	Tile(Level *root, Vector2 pos, Vector2i tile_index);
+	Tile(Level *root, Vector2i tile_index);
 	~Tile();
 
 	void _process(double delta) override;
 	void _physics_process(double delta) override;
 
 	Vector2 m_pos;
-	Vector2i m_tile_index;
+	Vector2i m_grid_indices;
 	Level *m_level;
 };
 

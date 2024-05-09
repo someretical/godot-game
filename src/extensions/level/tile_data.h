@@ -32,13 +32,18 @@ constexpr std::string_view QUESTION1[] = {
     "Question1", "Question2", "Question3", "Question4"
 };
 
+constexpr std::string_view START_POS[] = {
+    "StartPos"
+};
+
 constexpr std::array TILE_VARIANTS = {
     BLUE_TILES,
     WOOD_TILES,
     BLOCK_GOLD,
     BLOCK_WOOD,
     COIN1,
-    QUESTION1
+    QUESTION1,
+    START_POS
 };
 
 constexpr std::array VARIANT_SIZES = {
@@ -47,7 +52,8 @@ constexpr std::array VARIANT_SIZES = {
     sizeof(BLOCK_GOLD) / sizeof(BLOCK_GOLD[0]),
     sizeof(BLOCK_WOOD) / sizeof(BLOCK_WOOD[0]),
     sizeof(COIN1) / sizeof(COIN1[0]),
-    sizeof(QUESTION1) / sizeof(QUESTION1[0])
+    sizeof(QUESTION1) / sizeof(QUESTION1[0]),
+    sizeof(START_POS) / sizeof(START_POS[0])
 };
 
 }

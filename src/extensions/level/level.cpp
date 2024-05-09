@@ -105,34 +105,6 @@ Level::Level() {
     m_game_layer->set_offset(Vector2{CAMERA_WIDTH / 2, CAMERA_HEIGHT / 2});
     add_child(m_game_layer);
 
-    m_tiles_node = memnew(Node);
-    if (!m_tiles_node) {
-        std::exit(1);
-    }
-    m_tiles_node->set_name("Tiles");
-    m_game_layer->add_child(m_tiles_node);
-
-    m_collectables_node = memnew(Node);
-    if (!m_collectables_node) {
-        std::exit(1);
-    }
-    m_collectables_node->set_name("Collectables");
-    m_game_layer->add_child(m_collectables_node);
-
-    m_mobs_node = memnew(Node);
-    if (!m_mobs_node) {
-        std::exit(1);
-    }
-    m_mobs_node->set_name("Mobs");
-    m_game_layer->add_child(m_mobs_node);
-
-    m_particles_node = memnew(Node);
-    if (!m_particles_node) {
-        std::exit(1);
-    }
-    m_particles_node->set_name("Particles");
-    m_game_layer->add_child(m_particles_node);
-
     m_editor.m_brush = memnew(Brush(this));
     if (!m_editor.m_brush) {
         std::exit(1);
@@ -145,42 +117,25 @@ Level::Level() {
         std::exit(1);
     }
     m_editor.m_start_pos->set_visible(false);
-    m_game_layer->add_child(m_editor.m_start_pos);
-
     m_editor.m_enabled = false;
-
-    if (auto map = MapData::load_bare_map(Vector2i{30, 20}); map.has_value()) {
-        m_curmap = map.value();
-        m_bounds = Rect2{
-            0 + TINY, 
-            0 + TINY, 
-            static_cast<float>(m_curmap->m_dimensions.x * TILE_SIZE) - (2 * TINY), 
-            static_cast<float>(m_curmap->m_dimensions.y * TILE_SIZE) - (2 * TINY)
-        };
-    } else {
-        UtilityFunctions::print("Failed to load map");
-        std::exit(1);
-    }
-
-    int i = 0;
-    for (int x = HALF_TILE; x < TILE_COUNT_X * TILE_SIZE + HALF_TILE; x += TILE_SIZE, i++) {
-        int j = 0;
-        for (int y = HALF_TILE; y < TILE_COUNT_Y * TILE_SIZE + HALF_TILE; y += TILE_SIZE, j++) {
-            auto tile = memnew(Tile(this, Vector2(x, y), Vector2i(i, j)));
-            m_tiles_node->add_child(tile);
-        }
-    }
-
-    /* Setup player */
-    m_player = memnew(Player(this, Vector2{CAMERA_WIDTH / 2, CAMERA_HEIGHT / 2}));
-    m_mobs_node->add_child(m_player);
+    m_game_layer->add_child(m_editor.m_start_pos);
 
     /* Setup camera */
     m_camera = memnew(Camera2D);
+    if (!m_camera) {
+        std::exit(1);
+    }
     m_camera->set_name("Camera");
     m_camera->set_zoom(Vector2(SCREEN_ZOOM, SCREEN_ZOOM));
     add_child(m_camera);
-    m_camera_true_pos = Vector2{CAMERA_WIDTH / 2, CAMERA_HEIGHT / 2};
+
+    m_tiles_node = NULL;
+    m_collectables_node = NULL;
+    m_mobs_node = NULL;
+    m_particles_node = NULL;
+    m_player = NULL;
+
+    load_level("res://src/assets/levels/1.json");
 }
 
 Level::~Level() {
@@ -215,7 +170,95 @@ void Level::update_camera() {
     }
 }
 
-Error Level::import_map_inplace(const String &path) {
+Error Level::load_level(const String &path) {
+    if (m_tiles_node) m_tiles_node->queue_free();
+    m_tiles_node = memnew(Node);
+    if (!m_tiles_node) {
+        std::exit(1);
+    }
+    m_tiles_node->set_name("Tiles");
+    m_game_layer->add_child(m_tiles_node);
+
+    if (m_collectables_node) m_collectables_node->queue_free();
+    m_collectables_node = memnew(Node);
+    if (!m_collectables_node) {
+        std::exit(1);
+    }
+    m_collectables_node->set_name("Collectables");
+    m_game_layer->add_child(m_collectables_node);
+
+    if (m_mobs_node) m_mobs_node->queue_free();
+    m_mobs_node = memnew(Node);
+    if (!m_mobs_node) {
+        std::exit(1);
+    }
+    m_mobs_node->set_name("Mobs");
+    m_game_layer->add_child(m_mobs_node);
+
+    if (m_particles_node) m_particles_node->queue_free();
+    m_particles_node = memnew(Node);
+    if (!m_particles_node) {
+        std::exit(1);
+    }
+    m_particles_node->set_name("Particles");
+    m_game_layer->add_child(m_particles_node);
+
+    if (m_player) m_player->queue_free();
+    m_player = memnew(Player(this, Vector2{CAMERA_WIDTH / 2, CAMERA_HEIGHT / 2}));
+    if (!m_player) {
+        std::exit(1);
+    }
+    m_mobs_node->add_child(m_player);
+
+    if (auto map = MapData::load_map(path); map.has_value()) {
+        m_curmap = map.value();
+        m_bounds = Rect2{
+            0 + TINY, 
+            0 + TINY, 
+            static_cast<float>(m_curmap->m_dimensions.x * TILE_SIZE) - (2 * TINY), 
+            static_cast<float>(m_curmap->m_dimensions.y * TILE_SIZE) - (2 * TINY)
+        };
+
+        /* the true position is the position of the player, tiles, camera within the level itself, not the window */
+        m_editor.m_start_pos->m_true_pos = m_curmap->m_start_pos;
+        m_player->m_true_pos = m_curmap->m_start_pos * TILE_SIZE + Vector2{HALF_TILE, HITBOX_BOTTOM_GAP};
+        m_camera_true_pos.x = UtilityFunctions::clampf(m_player->m_true_pos.x, m_bounds.get_position().x + CAMERA_WIDTH / 2, m_bounds.get_end().x - CAMERA_WIDTH / 2);
+        m_camera_true_pos.y = UtilityFunctions::clampf(m_player->m_true_pos.y, m_bounds.get_position().y + CAMERA_HEIGHT / 2, m_bounds.get_end().y - CAMERA_HEIGHT / 2);
+
+        /* find the offset of the camera's true position in the tile grid as the camera can be between grid lines */
+        const Vector2 camera_offset{fmodf(m_camera_true_pos.x, TILE_SIZE), fmodf(m_camera_true_pos.y, TILE_SIZE)};
+        
+        /* find the grid tile the camera's true position lies in */
+        /* the i suffix indicates that these are indices in the tile grid */
+        const Vector2i centre_pos_i{
+            static_cast<int>(m_camera_true_pos.x / TILE_SIZE),
+            static_cast<int>(m_camera_true_pos.y / TILE_SIZE)
+        };
+
+        /* go from centre to top left */
+        const Vector2i top_left_pos_i{
+            static_cast<int>((m_camera_true_pos.x - (CAMERA_WIDTH / 2)) / TILE_SIZE),
+            static_cast<int>((m_camera_true_pos.y - (CAMERA_HEIGHT / 2)) / TILE_SIZE)
+        };
+
+        /* i and j correspond to the RELATIVE tile grid indices from the top left of the window */
+        for (int j = 0; j < TILE_COUNT_Y; j++) {
+            for (int i = 0; i < TILE_COUNT_X; i++) {
+                auto tile = memnew(Tile(this, Vector2i(i, j) + top_left_pos_i));
+                if (!tile) {
+                    std::exit(1);
+                }
+                m_tiles_node->add_child(tile);
+            }
+        }
+
+        return OK;
+    } else {
+        return map.error();
+    }
+}
+
+Error Level::import_mapdata_inplace(const String &path) {
     if (auto map = MapData::load_map(path); map.has_value()) {
         m_curmap = map.value();
         m_bounds = Rect2{

@@ -28,10 +28,10 @@ void Marker::_process(double delta) {
 }
 
 void Marker::_physics_process(double delta) {
-    Rect2 viewport = m_level->m_camera->get_viewport_rect();
-    Rect2 marker_rect{static_cast<float>(m_true_pos.x * TILE_SIZE), static_cast<float>(m_true_pos.y * TILE_SIZE), TILE_SIZE, TILE_SIZE};
+    const Rect2 viewport_rect{m_level->m_camera_true_pos.x - CAMERA_WIDTH / 2, m_level->m_camera_true_pos.y - CAMERA_HEIGHT / 2, CAMERA_WIDTH, CAMERA_HEIGHT};
+    const Rect2 marker_rect{static_cast<float>(m_true_pos.x * TILE_SIZE), static_cast<float>(m_true_pos.y * TILE_SIZE), TILE_SIZE, TILE_SIZE};
 
-    if (viewport.intersects(marker_rect)) {
+    if (viewport_rect.intersects(marker_rect)) {
         set_position(marker_rect.position + Vector2{HALF_TILE, HALF_TILE} - m_level->m_camera_true_pos);
         set_visible(true);
     } else {

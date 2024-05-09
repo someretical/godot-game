@@ -12,7 +12,7 @@ void Tile::_bind_methods() {
 Tile::Tile() {
 }
 
-Tile::Tile(Level *level, Vector2 pos, Vector2i tile_index) : m_level(level), m_pos(pos), m_tile_index(tile_index) {
+Tile::Tile(Level *level, Vector2i tile_index) : m_level(level), m_grid_indices(tile_index), m_pos((tile_index * TILE_SIZE) + Vector2{HALF_TILE, HALF_TILE}) {
     set_process_priority(static_cast<int>(ProcessingPriority::Tiles));
     set_physics_process_priority(static_cast<int>(PhysicsProcessingPriority::Tiles));
     set_z_index(static_cast<int>(ZIndex::Tiles));
@@ -23,15 +23,15 @@ Tile::~Tile() {
 
 void Tile::_process(double delta) {
     if (
-        m_tile_index.x < 0 || m_tile_index.y < 0 || 
-        m_tile_index.x >= m_level->m_curmap->m_dimensions.x || 
-        m_tile_index.y >= m_level->m_curmap->m_dimensions.y
+        m_grid_indices.x < 0 || m_grid_indices.y < 0 || 
+        m_grid_indices.x >= m_level->m_curmap->m_dimensions.x || 
+        m_grid_indices.y >= m_level->m_curmap->m_dimensions.y
     ) {
         set_visible(false);
         return;
     }
 
-    const auto data = m_level->m_curmap->m_tile_data[m_tile_index.y][m_tile_index.x];
+    const auto data = m_level->m_curmap->m_tile_data[m_grid_indices.y][m_grid_indices.x];
 
     switch (data.m_tile_group) {
         /* static tiles */
@@ -68,20 +68,20 @@ void Tile::_physics_process(double delta) {
     if (abs(m_pos.x - campos.x) > TILE_COUNT_X * HALF_TILE) {
         if (m_pos.x < campos.x) {
             m_pos.x += TILE_COUNT_X * TILE_SIZE;
-            m_tile_index.x += TILE_COUNT_X;
+            m_grid_indices.x += TILE_COUNT_X;
         } else {
             m_pos.x -= TILE_COUNT_X * TILE_SIZE;
-            m_tile_index.x -= TILE_COUNT_X;
+            m_grid_indices.x -= TILE_COUNT_X;
         }
     }
 
     if (abs(m_pos.y - campos.y) > TILE_COUNT_Y * HALF_TILE) {
         if (m_pos.y < campos.y) {
             m_pos.y += TILE_COUNT_Y * TILE_SIZE;
-            m_tile_index.y += TILE_COUNT_Y;
+            m_grid_indices.y += TILE_COUNT_Y;
         } else {
             m_pos.y -= TILE_COUNT_Y * TILE_SIZE;
-            m_tile_index.y -= TILE_COUNT_Y;
+            m_grid_indices.y -= TILE_COUNT_Y;
         }
     }
 
