@@ -16,6 +16,17 @@
             "cwd": "${workspaceFolder}",
             "environment": [],
             "console": "internalConsole",
+        },
+        {
+            "name": "Windows debug without build",
+            "type": "cppvsdbg",
+            "request": "launch",
+            "program": "E:\\Godot_v4.2.2-stable_win64.exe",
+            "args": ["--path", "${workspaceFolder}", "--debug"],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "environment": [],
+            "console": "internalConsole",
         }
     ]
 }

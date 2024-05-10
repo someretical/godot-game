@@ -22,6 +22,7 @@
 #include <godot_cpp/variant/string.hpp>
 #include <godot_cpp/variant/variant.hpp>
 #include <godot_cpp/classes/input_event_action.hpp>
+#include <godot_cpp/classes/rendering_server.hpp>
 
 using namespace godot;
 
@@ -309,6 +310,7 @@ bool Level::handle_editor_toggle(const Ref<InputEvent> &event) {
 }
 
 void Level::_ready() {
+    RenderingServer::get_singleton()->set_default_clear_color(Color::hex(0xA0D0F8FF));
 }
 
 void Level::_process(double delta) {

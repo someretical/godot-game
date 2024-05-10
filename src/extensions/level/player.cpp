@@ -138,7 +138,7 @@ void Player::_process(double delta) {
     }
 }
 
-bool Player::check_collision(Vector2 pos) const {
+bool Player::check_collision(Vector2 pos) {
     /* see hitbox notes at the top of this file */
     const auto &player_hitbox = Rect2(pos.x - HITBOX_LEFT_OFFSET, pos.y - HITBOX_TOP_OFFSET, HITBOX_WIDTH, HITBOX_HEIGHT);
 
@@ -160,21 +160,98 @@ bool Player::check_collision(Vector2 pos) const {
     const auto topleft = Vector2i(player_hitbox.get_position().x / TILE_SIZE, player_hitbox.get_position().y / TILE_SIZE);
     const auto bottomright = Vector2i(player_hitbox.get_end().x / TILE_SIZE, player_hitbox.get_end().y / TILE_SIZE);
 
-    /* check if any part of the player intersects with tiles */
+    /* check collisions at head */
     for (int i = topleft.x; i <= bottomright.x; i++) {
-        for (int j = topleft.y; j <= bottomright.y; j++) {
-            /* assume that all blocks have a hitbox that is 16x16 */
-            if (m_level->m_curmap->m_tile_data[j][i].m_tile_group != -1) {
-                const auto tile_hitbox = Rect2i(i * TILE_SIZE, j * TILE_SIZE, TILE_SIZE, TILE_SIZE);
+        HitboxPartBitset parts{};
+        parts.set(HITBOX_HEAD);
+        if (check_collision_at_hitbox_part(Vector2i(i, topleft.y), player_hitbox, parts)) {
+            return true;
+        }
+    }
 
-                if (player_hitbox.intersects(tile_hitbox)) {
+    /* check collisions in body */
+    for (int i = topleft.x; i <= bottomright.x; i++) {
+        for (int j = topleft.y + 1; j <= bottomright.y - 1; j++) {
+            HitboxPartBitset parts{};
+            parts.set(HITBOX_BODY);
+            if (check_collision_at_hitbox_part(Vector2i(i, j), player_hitbox, parts)) {
+                return true;
+            }
+        }
+    }
+
+    /* check collisions at feet */
+    for (int i = topleft.x; i <= bottomright.x; i++) {
+        HitboxPartBitset parts{};
+        parts.set(HITBOX_FEET);
+        if (check_collision_at_hitbox_part(Vector2i(i, bottomright.y), player_hitbox, parts)) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+bool Player::check_collision_at_hitbox_part(const Vector2i tile_grid_index, const Rect2 player_hitbox, const HitboxPartBitset parts) {
+    auto &tile = m_level->m_curmap->m_tile_data[tile_grid_index.y][tile_grid_index.x];
+
+    if (parts.test(HITBOX_HEAD)) {
+        switch (tile.m_tile_group) {
+            /* blue tiles */
+            case 0: {
+ignore_blue:
+                /* only check collisions with the top variant of blue tiles with the feet */
+                return false;
+            }
+        }
+    }
+
+    if (parts.test(HITBOX_BODY)) {
+        switch (tile.m_tile_group) {
+            case 0: goto ignore_blue;
+        }
+    }
+
+    if (parts.test(HITBOX_FEET)) {
+        switch (tile.m_tile_group) {
+            case 0: {
+                if (tile.m_variant >= 0 && tile.m_variant < 6) {
+                    return false;
+                }
+                
+                else {
+                    /* if the player is holding down, we want them to go through platforms */
+                    if (Input::get_singleton()->is_action_pressed("ui_down")) return false;
+
+                    /* if the player's feet is falling and is passing through the top of a platform */
+                    /* note that downwards is positive */
+                    if (TILE_SIZE - fmodf(player_hitbox.get_end().y, TILE_SIZE) + m_vel.y <= TILE_SIZE) return false;
+
                     return true;
                 }
             }
         }
     }
 
-    return false;
+    switch (tile.m_tile_group) {
+        /* empty */
+        case -1: return false;
+
+        /* coin */
+        case 4: {
+            const Rect2i tile_hitbox{tile_grid_index.x * TILE_SIZE, tile_grid_index.y * TILE_SIZE, TILE_SIZE, TILE_SIZE};
+            if (player_hitbox.intersects(tile_hitbox)) {
+                /* TODO store number of collected coins */
+                tile.m_tile_group = -1;
+                return false;
+            }
+        }
+
+        default: {
+            const Rect2i tile_hitbox{tile_grid_index.x * TILE_SIZE, tile_grid_index.y * TILE_SIZE, TILE_SIZE, TILE_SIZE};
+            return player_hitbox.intersects(tile_hitbox);
+        }
+    }
 }
 
 void Player::process_x() {

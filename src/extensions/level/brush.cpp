@@ -196,16 +196,8 @@ bool Brush::handle_pick_tile(const Ref<InputEvent> &event) {
 }
 
 bool Brush::handle_export_level(const Ref<InputEvent> &event) {
-    if (event->is_action_pressed("ui_editor_export_level")) {
-        if (m_level->m_curmap->m_path.is_empty()) {
-            goto save_as_anyway;
-        }
-
-        m_level->export_current_map(m_level->m_curmap->m_path);
-        get_viewport()->set_input_as_handled();
-        return true;
-    } else if (event->is_action_pressed("ui_editor_export_level_as")) {
-save_as_anyway:
+    if (event->is_action_pressed("ui_editor_export_level_as")) {
+    save_as_anyway:
         const auto error = DisplayServer::get_singleton()->file_dialog_show(
             "Save Level", 
             ".", 
@@ -218,6 +210,13 @@ save_as_anyway:
 
         if (error != Error::OK) {
             UtilityFunctions::print("file_dialog_show error: ", error);
+        }
+
+        get_viewport()->set_input_as_handled();
+        return true;
+    } else if (event->is_action_pressed("ui_editor_export_level")) {
+        if (m_level->m_curmap->m_path.is_empty() || m_level->export_current_map(m_level->m_curmap->m_path) != OK) {
+            goto save_as_anyway;
         }
 
         get_viewport()->set_input_as_handled();

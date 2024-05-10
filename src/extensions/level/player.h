@@ -1,6 +1,7 @@
 #ifndef PLAYER_H
 #define PLAYER_H
 
+#include <bitset>
 #include <godot_cpp/classes/animated_sprite2d.hpp>
 #include <godot_cpp/templates/vector.hpp>
 
@@ -47,6 +48,14 @@ enum class PlayerAction {
 	FALLING
 };
 
+enum HitboxPart {
+	HITBOX_HEAD = 0,
+	HITBOX_BODY = 1,
+	HITBOX_FEET = 2
+};
+
+typedef std::bitset<3> HitboxPartBitset;
+
 class Player : public AnimatedSprite2D {
 	GDCLASS(Player, AnimatedSprite2D)
 
@@ -60,7 +69,8 @@ public:
 
 	void _process(double delta) override;
 	void _physics_process(double delta) override;
-	bool check_collision(Vector2 pos) const;
+	bool check_collision_at_hitbox_part(const Vector2i tile_grid_index, const Rect2 player_hitbox, const HitboxPartBitset parts);
+	bool check_collision(Vector2 pos);
 	void process_x();
 	void process_y();
 

@@ -69,7 +69,8 @@
             "xtree": "cpp",
             "xutility": "cpp",
             "expected": "cpp",
-            "map": "cpp"
+            "map": "cpp",
+            "bitset": "cpp"
         }
     }
 }
