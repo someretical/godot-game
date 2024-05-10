@@ -12,8 +12,21 @@ constexpr std::string_view BLUE_TILES[] = {
     "Blue-1", "Blue-2", "Blue-3", "Blue-4", "Blue-5", "Blue-6", "Blue-7", "Blue-8", "Blue-9"
 };
 
+constexpr std::string_view ORANGE_TILES[] = {
+    "Orange-1", "Orange-2", "Orange-3", "Orange-4", "Orange-5", "Orange-6", "Orange-7", "Orange-8", "Orange-9"
+};
+
+constexpr std::string_view GRASS_TILES[] = {
+    "Grass-1", "Grass-2", "Grass-3", "Grass-4", "Grass-5", "Grass-6", "Grass-7", "Grass-8", "Grass-9",
+    "Grass-10", "Grass-11", "Grass-12", "Grass-13", "Grass-14", "Grass-15", "Grass-16", "Grass-17", "Grass-18"
+};
+
 constexpr std::string_view WOOD_TILES[] = {
     "Wood-0", "Wood-1", "Wood-2", "Wood-3", "Wood-4", "Wood-5"
+};
+
+constexpr std::string_view PIPE_TILES[] = {
+    "Pipe-1", "Pipe-2", "Pipe-3", "Pipe-4"
 };
 
 constexpr std::string_view BLOCK_GOLD[] = {
